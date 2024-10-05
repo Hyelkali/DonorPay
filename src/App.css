@@ -1,0 +1,15 @@
+
+.header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    background-color: #fff;
+}
+.navlinks{
+    background-color: #1741fa;
+    margin: 3px;
+    padding: 8px;
+    width: 4px;
+    height: 4px;
+}

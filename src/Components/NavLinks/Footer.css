@@ -1,0 +1,39 @@
+/* Footer.css */
+.footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+  }
+  
+  .footerDiv {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .fth4 {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .ftul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .ftul li {
+    margin: 5px 0;
+  }
+  
+  .ftlnk {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .ftlnk:hover {
+    text-decoration: underline;
+  }
+  
+  .lastDonor {
+    margin-top: 20px;
+  }
+  

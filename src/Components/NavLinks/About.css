@@ -1,0 +1,157 @@
+/* Importing Tailwind's base, components, and utilities */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Root styles */
+:root {
+  --primary-color: #007bff;      /* Primary color */
+  --secondary-color: #6c757d;    /* Secondary color */
+  --bg-light: #ffffff;           /* Light mode background */
+  --bg-dark: #242424;            /* Dark mode background */
+  --text-light: #333;            /* Text color in light mode */
+  --text-dark: #ffffff;          /* Text color in dark mode */
+  --card-bg-light: #f8f9fa;      /* Light background for cards */
+  --card-bg-dark: #3a3a3a;       /* Dark background for cards */
+  --border-light: #e0e0e0;       /* Light mode border color */
+  --border-dark: #444444;        /* Dark mode border color */
+}
+
+/* Light/Dark Mode Transition */
+html {
+  transition: background-color 0.5s, color 0.5s;
+}
+
+/* Light Mode (default) */
+body {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+/* Dark Mode */
+html.dark body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+.video-background video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* Container */
+.about-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Full viewport height */
+  padding: 20px; /* Padding for the component */
+}
+
+/* Header styles */
+.about-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.about-header h1 {
+  font-size: 2.5rem; /* Large font for title */
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.about-header p {
+  font-size: 1.25rem; /* Medium font for subtitle */
+  color: var(--secondary-color);
+}
+
+/* Mission Section */
+.mission-section {
+  margin-bottom: 24px; /* Space between sections */
+}
+
+.mission-section h2 {
+  font-size: 2rem; /* Medium font for section titles */
+  margin-bottom: 12px; /* Space below section titles */
+}
+
+.mission-section p {
+  font-size: 1rem; /* Regular font size */
+  max-width: 800px; /* Limit width for readability */
+  text-align: justify; /* Justify text for clean look */
+}
+
+/* Values Section */
+.values-section {
+  display: flex; /* Flex layout for values */
+  justify-content: center; /* Center content */
+  flex-wrap: wrap; /* Wrap items to next line */
+  gap: 20px; /* Space between cards */
+  margin-bottom: 24px; /* Space below section */
+}
+
+.value-card {
+  background-color: var(--card-bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 8px; /* Rounded corners */
+  padding: 16px; /* Padding inside cards */
+  text-align: center; /* Center text in card */
+  transition: background-color 0.3s, transform 0.3s; /* Transition effects */
+  width: 240px; /* Fixed width for cards */
+}
+
+.value-card:hover {
+  transform: scale(1.05); /* Scale effect on hover */
+}
+
+.value-card h3 {
+  font-size: 1.25rem; /* Font size for value titles */
+  margin-top: 8px; /* Space above titles */
+}
+
+.value-card p {
+  font-size: 0.875rem; /* Smaller font size for descriptions */
+  color: var(--secondary-color); /* Color for description text */
+}
+
+/* Get Involved Section */
+.get-involved {
+  text-align: center; /* Centered text */
+  margin-bottom: 24px; /* Space below section */
+}
+
+.get-involved button {
+  background-color: var(--primary-color); /* Primary button color */
+  color: var(--text-dark); /* Text color for button */
+  padding: 12px 24px; /* Padding for button */
+  border-radius: 8px; /* Rounded button */
+  border: none; /* Remove border */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s, transform 0.3s; /* Transition effects */
+}
+
+.get-involved button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+  transform: translateY(-2px); /* Lift effect on hover */
+}
+
+/* Card Styles for Dark Mode */
+html.dark .value-card {
+  background-color: var(--card-bg-dark);
+  border-color: var(--border-dark);
+  color: var(--text-dark);
+}
+
+/* Footer styles */
+.footer {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+  padding: 20px;
+}
+
+html.dark .footer {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
