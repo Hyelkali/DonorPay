@@ -166,6 +166,7 @@ const Home = () => {
         </div>
       </header>
       <main className="mainCntr">
+        {"added build file"}
         <section className="mainSect relative">
           {/* Background Video */}
           <div className="video-background absolute inset-0 z-0 overflow-hidden">
