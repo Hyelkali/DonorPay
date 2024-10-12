@@ -6,8 +6,11 @@ import Dashboard from './Components/Dashboard';
 import ForgotPassword from './Components/ForgotPassword';
 import About from './Components/NavLinks/About';
 import Footer from './Components/NavLinks/Footer'
-import InfoModal
- from './Components/InfoModal';
+import InfoModal from './Components/InfoModal';
+import Verify from './Components/Verify';
+import Navbar from './Components/NavLinks/Navbar'
+import Popup from './Components/Popup';
+import Subscription from './Components/NavLinks/Subscription'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -38,8 +41,24 @@ const router = createBrowserRouter([
     element: <Footer />,
   },
   {
+    path: "/Popup",
+    element: <Popup />
+  },
+  {
     path: "/infoModal",
     element: <InfoModal />,
+  },
+  {
+    path: "/Navbar",
+    element: <Navbar />,
+  },
+  {
+    path: "/Subscription",
+    element: <Subscription />,
+  },
+  {
+    path: "/Verify",
+    element: <Verify />
   }
 ]);
 

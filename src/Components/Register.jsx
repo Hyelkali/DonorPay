@@ -1,52 +1,58 @@
 // src/Components/Register.jsx
 import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"; // Import GoogleAuthProvider and signInWithPopup
+import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
 import { auth } from "../firebaseConfig"; // Corrected import of auth
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig"; // Ensure Firestore is imported
+import { Eye, EyeOff } from "lucide-react"; // Import Eye and EyeOff icons
+import Popup from "./Popup"; // Import the Popup component
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // State for confirm password
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate(); // For navigating after successful registration
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+    const handleRegister = async (e) => {
+      e.preventDefault();
+    
+      if (password !== confirmPassword) {
+        showError("Passwords do not match!");
+        return;
+      }
+    
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+    
+        // Save user info to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          name: "", // Placeholder for name
+          address: "", // Placeholder for address
+        });
+    
+        // Send email verification
+        await sendEmailVerification(user);
+        showAlert(`A verification email has been sent to ${user.email}. Please verify to proceed.`);
+        
+        // Navigate to the verify email page
+        navigate("/Verify");
+    
+      } catch (error) {
+        showError(error.message);
+      }
+    };
+    
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match!");
-      return;
-    }
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Save user info to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        name: "", // Placeholder for name
-        address: "", // Placeholder for address
-      });
-
-      alert("Successfully registered!");
-      setEmail(""); // Clear form
-      setPassword("");
-      setConfirmPassword("");
-      setError("");
-
-      // Redirect to login page after registration
-      navigate("/login");
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const handleGoogleSignIn = async () => { // Added method for Google sign-in
+  const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -60,19 +66,33 @@ const Register = () => {
         address: "", // Placeholder for address
       }, { merge: true });
 
-      alert(`Welcome, ${user.displayName}`); // Optional: Welcome message
+      showAlert(`Welcome, ${user.displayName}`);
       navigate("/dashboard"); // Redirect to dashboard after successful sign-in
     } catch (error) {
-      console.error('Error during Google Sign-In:', error);
-      alert(error.message);
+      showError(error.message);
     }
+  };
+
+  const showError = (message) => {
+    setError(message);
+    setShowPopup(true);
+  };
+
+  const showAlert = (message) => {
+    setAlertMessage(message);
+    setShowPopup(true);
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+    setError(""); // Clear the error message after closing
+    setAlertMessage(""); // Clear the alert message after closing
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.formContainer}>
         <h2>Register</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
         <form onSubmit={handleRegister} style={styles.form}>
           <label>Email</label>
           <input
@@ -84,30 +104,47 @@ const Register = () => {
           />
 
           <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
+          <div style={styles.passwordContainer}>
+            <input
+              type={isPasswordVisible ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={styles.input}
+            />
+            {isPasswordVisible ? (
+              <EyeOff onClick={() => setIsPasswordVisible(!isPasswordVisible)} style={styles.eyeIcon} />
+            ) : (
+              <Eye onClick={() => setIsPasswordVisible(!isPasswordVisible)} style={styles.eyeIcon} />
+            )}
+          </div>
 
           <label>Confirm Password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
+          <div style={styles.passwordContainer}>
+            <input
+              type={isConfirmPasswordVisible ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={styles.input}
+            />
+            {isConfirmPasswordVisible ? (
+              <EyeOff onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} style={styles.eyeIcon} />
+            ) : (
+              <Eye onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)} style={styles.eyeIcon} />
+            )}
+          </div>
 
           <button type="submit" style={styles.button}>
             Register
           </button>
         </form>
 
+        {/* Divider */}
+        <div style={styles.divider} />
+
         <GoogleButton
-          onClick={handleGoogleSignIn} // Updated to use the Google sign-in method
+          onClick={handleGoogleSignIn}
           style={styles.googleButton}
         />
 
@@ -115,63 +152,10 @@ const Register = () => {
           Already have an account? <a href="/login">Login</a>
         </p>
       </div>
-    </div>
-  );
-};
 
-// Login Page Component
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const auth = getAuth();
-  const navigate = useNavigate();
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    auth
-      .signInWithEmailAndPassword(auth, email, password) // Ensure auth is used correctly
-      .then((userCredential) => {
-        alert("Login successful!");
-        // Redirect to dashboard or home page
-        navigate("/dashboard");
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.formContainer}>
-        <h2>Login</h2>
-        <form onSubmit={handleLogin} style={styles.form}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={styles.input}
-          />
-
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
-
-          <button type="submit" style={styles.button}>
-            Login
-          </button>
-        </form>
-
-        <p>
-          Don't have an account? <a href="/register">Register</a>
-        </p>
-      </div>
+      {showPopup && (error || alertMessage) && (
+        <Popup message={error || alertMessage} onClose={closePopup} />
+      )}
     </div>
   );
 };
@@ -207,6 +191,17 @@ const styles = {
     fontSize: "16px",
     width: "100%",
   },
+  passwordContainer: {
+    position: "relative",
+    width: "100%",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    cursor: "pointer",
+  },
   button: {
     backgroundColor: "#28a745",
     color: "#fff",
@@ -216,11 +211,15 @@ const styles = {
     cursor: "pointer",
     border: "none",
   },
+  divider: {
+    margin: "20px 0",
+    height: "1px",
+    backgroundColor: "#ddd",
+  },
   googleButton: {
     width: "100%",
     marginTop: "15px",
   },
 };
 
-export default Register;  // Export Register as the default
-export { Login };
+export default Register; // Export Register as the default

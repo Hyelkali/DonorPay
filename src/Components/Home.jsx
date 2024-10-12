@@ -1,171 +1,84 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
-  Menu,
-  Home as HomeIcon,
-  Info,
-  Mail,
-  LogIn,
   UserPlus,
-  Sun,
-  Moon,
   Heart,
   DollarSign,
   Shield,
-  Globe
+  Globe,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card"; // Combined import
 import CardContent from "@/components/ui/Card"; // Combined import
 import CardHeader from "@/components/ui/Card"; // Combined import
 import InfoModal from "./InfoModal"; // Correct import
-import Loader from "@/components/Loader"; // Import the Loader component
-import { Swiper, SwiperSlide } from "swiper/react"; // Core Swiper and SwiperSlide components
-import "swiper/swiper-bundle.css"; // Core Swiper styles
-import "swiper/css/navigation"; // Optional navigation styles
-import "swiper/css/pagination";
+import Subscription from "./NavLinks/Subscription";
+import Navbar from "./NavLinks/Navbar"; // Imported Navbar
+
 const Home = () => {
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBouncingComplete, setIsBouncingComplete] = useState(false); // Track if bouncing is complete
+  const [darkMode, setDarkMode] = useState(false); // Manage dark mode state here
   const [openModal, setOpenModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
+  const location = useLocation();
 
   const footerLinks = {
-    About: [{ title: "Our Mission", content: "About our mission." }],
-    Help: [{ title: "FAQs", content: "Frequently asked questions." }]
-    // Add more sections as needed
+    About: [
+      {
+        title: "Our Mission",
+        content:
+          "DonorPay is dedicated to helping non-profit organizations streamline the process of receiving donations securely and efficiently. We believe in empowering donors and organizations by providing a seamless payment experience, making it easier for charitable causes to thrive.",
+      },
+    ],
+    Help: [
+      {
+        title: "What is DonorPay?",
+        content:
+          "DonorPay is an online platform designed for non-profit organizations to easily receive and manage donations. It provides secure transactions and transparency for both organizations and donors.",
+      },
+      {
+        title: "How do I donate using DonorPay?",
+        content:
+          "You can make donations by selecting a cause or organization, entering your payment details, and confirming the transaction. We support multiple payment methods, including credit cards, bank transfers, and digital wallets.",
+      },
+      {
+        title: "Is DonorPay secure?",
+        content:
+          "Absolutely. We employ advanced encryption methods and secure gateways to ensure your payment details are protected at all times.",
+      },
+    ],
   };
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 960);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-
-    // Simulate data fetching
-    const fetchData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsBouncingComplete(true); // Set to true after loading
-      await new Promise((resolve) => setTimeout(resolve, 600)); // Wait for the final bounce animation
-      setIsLoading(false);
-    };
-
-    fetchData();
-
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
-    document.documentElement.classList.toggle("dark", !darkMode);
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
-
-  const navItems = [
-    { name: "Home", icon: <HomeIcon className="navlinks" />, href: "/" },
-    { name: "About", icon: <Info className="navlinks" />, href: "/about" },
-    { name: "Contact", icon: <Mail className="navlinks" />, href: "/contact" },
-    { name: "Log In", icon: <LogIn className="navlinks" />, href: "/login" },
-    {
-      name: "Sign Up",
-      icon: <UserPlus className="navlinks" />,
-      href: "/register"
-    }
-  ];
 
   const handleOpenModal = (title, content) => {
     setModalContent({ title, content });
     setOpenModal(true);
   };
-
+  useEffect(() => {
+    console.log("Dark mode:", darkMode); // Debugging log
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+      document.body.classList.remove("light-mode");
+    } else {
+      document.body.classList.add("light-mode");
+      document.body.classList.remove("dark-mode");
+    }
+  }, [darkMode]);
+  
   const handleCloseModal = () => {
     setOpenModal(false);
-  };
-
-  if (isLoading) {
-    return <Loader className={isBouncingComplete ? "bounce-complete" : ""} />;
+};
+  
+  const toggleDarkMode = () => {
+    setDarkMode(prevMode => !prevMode);
   }
+  // Determine active route for Navbar
+  const activeRoute = (route) => (location.pathname === route ? "active" : "");
 
   return (
-    <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
-      <header className="header flex justify-between items-center py-4 px-6">
-        <div className="don">
-          <h1 className="donorPay text-2xl font-bold">DonorPay</h1>
-        </div>
-
-        <div className="actions flex items-center gap-4">
-          <button onClick={toggleDarkMode} className="toggleMode">
-            {darkMode ? (
-              <Moon className="toggleIcon" />
-            ) : (
-              <Sun className="toggleIcon" />
-            )}
-          </button>
-
-          {isLargeScreen ? (
-            <nav className="navbar flex gap-4 items-center">
-              {navItems.map((item, index) => (
-                <Button
-                  key={index}
-                  variant={index === 0 ? "default" : "contained"}
-                  asChild
-                >
-                  <Link to={item.href} className="btnlinks flex items-center ">
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                </Button>
-              ))}
-            </nav>
-          ) : (
-            <div className="flex items-center relative">
-              <button onClick={toggleMenu} className="relative z-10">
-                <Menu className="w-6 h-6" />
-              </button>
-
-              {isMenuOpen && (
-                <div className="absolute top-12 right-0 bg-white shadow-lg rounded-lg p-4 z-20">
-                  <nav className="flex flex-col gap-2">
-                    {navItems.map((item, index) => (
-                      <Button key={index} variant="ghost" asChild>
-                        <Link
-                          to={item.href}
-                          className="flex items-center gap-2"
-                        >
-                          {item.icon}
-                          {item.name}
-                        </Link>
-                      </Button>
-                    ))}
-                    <button
-                      onClick={toggleDarkMode}
-                      className="flex items-center gap-2"
-                    >
-                      {darkMode ? (
-                        <Moon className="toggleIcon" />
-                      ) : (
-                        <Sun className="toggleIcon" />
-                      )}
-                      <span>{darkMode ? "Dark Mode" : "Light Mode"}</span>
-                    </button>
-                  </nav>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
-      <main className="mainCntr">
+     <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
+  <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />      
+  <main className="mainCntr">
         <section className="mainSect relative">
           {/* Background Video */}
           <div className="video-background absolute inset-0 z-0 overflow-hidden">
@@ -194,98 +107,11 @@ const Home = () => {
 
           {/* Image Carousel for Mobile */}
           <div className="carousel-container relative z-10 mt-6">
-            <Swiper
-              spaceBetween={10}
-              slidesPerView={1}
-              loop={true}
-              pagination={{ clickable: true }} // Pagination for mobile navigation
-            >
-              {/* Each SwiperSlide represents a carousel item */}
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt="Children in need"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img
-                  src="https://plus.unsplash.com/premium_photo-1663099731021-0356791304f0?q=80&w=1500&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt="Community support"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img
-                  src="https://plus.unsplash.com/premium_photo-1664298513288-456716b3023f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt="Empowering the poor"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img
-                  src="https://files.oaiusercontent.com/file-FaHltfFKD93hwQbxP5D5HD7B?se=2024-10-04T04%3A19%3A22Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D48005c15-17d8-41e1-8994-38b5745c8211.webp&sig=LahSVIP2Ph1c3IJgMzrK6AsDoh2JVH/3eqGWu0yCsSI%3D"
-                  alt="Empowering the poor"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1541976844346-f18aeac57b06?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTEyfHxwb29yJTIwcGVvcGxlfGVufDB8fDB8fHww"
-                  alt="Giving Hope"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1562548930-1a79a12becc9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cG92ZXJ0eSUyMGNoaWxkcmVufGVufDB8fDB8fHww"
-                  alt="Children living in poverty"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1519222970733-f546218fa6d7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTV8fHBvb3IlMjBmYW1pbHklMjBjb25zdHJ1Y3Rpb258ZW58MHx8MHx8fHw%3D"
-                  alt="Building shelters for the poor"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1543353071-873f17a7a088?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cG92ZXJ0eXxlbnwwfHwwfHx8MA%3D%3D"
-                  alt="Poor children in need"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1530058386473-62466a678330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzl8fHBvb3IlMjBjb21tdW5pdHl8ZW58MHx8MHx8fHw%3D"
-                  alt="Empowering the underprivileged"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8Y2hhcml0eSUyMHdvcmt8ZW58MHx8MHx8fA%3D%3D"
-                  alt="Volunteering for community work"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              <SwiperSlide>
-                <img
-                  src="https://images.unsplash.com/photo-1579425493788-3c9f2d049735?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z2l2aW5nJTIwZm9vZCUyMHRvJTIwcG9vcnxlbnwwfHwwfHx8MA%3D%3D"
-                  alt="Giving food to the poor"
-                  className="w-full h-fit object-cover"
-                />
-              </SwiperSlide>
-
-              {/* Add more slides if needed */}
-            </Swiper>
+            <img
+              src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt="Children in need"
+              className="w-full h-fit object-cover"
+            />
           </div>
         </section>
 
@@ -295,16 +121,16 @@ const Home = () => {
             {[
               {
                 title: "Trusted Platform",
-                icon: <Heart className="w-8 h-8 mb-4 text-blue-500" />
+                icon: <Heart className="w-8 h-8 mb-4 text-blue-500" />,
               },
               {
                 title: "Easy Transfers",
-                icon: <DollarSign className="w-8 h-8 mb-4 text-green-500" />
+                icon: <DollarSign className="w-8 h-8 mb-4 text-green-500" />,
               },
               {
                 title: "Secure Payments",
-                icon: <Shield className="w-8 h-8 mb-4 text-red-500" />
-              }
+                icon: <Shield className="w-8 h-8 mb-4 text-red-500" />,
+              },
             ].map((item, index) => (
               <Card key={index} className="cardSect2">
                 <CardHeader>
@@ -334,23 +160,23 @@ const Home = () => {
               {
                 value: "$50M+",
                 label: "Donations Processed",
-                icon: <DollarSign className="donationsPro" />
+                icon: <DollarSign className="donationsPro" />,
               },
               {
                 value: "1M+",
                 label: "Active Users",
-                icon: <UserPlus className="activeUr" />
+                icon: <UserPlus className="activeUr" />,
               },
               {
                 value: "10K+",
                 label: "Causes Supported",
-                icon: <Heart className="causes" />
+                icon: <Heart className="causes" />,
               },
               {
                 value: "100+",
                 label: "Countries Reached",
-                icon: <Globe className="countries" />
-              }
+                icon: <Globe className="countries" />,
+              },
             ].map((item, index) => (
               <Card key={index} className="mapcard1">
                 <CardContent className="cardcnt">
@@ -395,6 +221,7 @@ const Home = () => {
             ))}
           </div>
           <div className="lastDonor">
+            <Subscription />
             <p>&copy; 2024 DonorPay. All rights reserved.</p>
           </div>
         </div>

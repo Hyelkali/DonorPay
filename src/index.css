@@ -11,7 +11,7 @@
   --text-light: #222222;         /* Darker text in light mode for contrast */
   --text-dark: #ffffff;          /* Text color in dark mode */
   --card-bg-light: #ffffff;      /* Brighter background for light mode cards */
-  --card-bg-dark: #333333;       /* Dark background for cards */
+  --card-bg-dark: #d4d4d4;       /* Dark background for cards */
   --border-light: #e0e0e0;       /* Light mode border color */
   --border-dark: #444444;        /* Dark mode border color */
 }
@@ -20,6 +20,19 @@
 html {
   transition: background-color 0.5s, color 0.5s;
 }
+/* styles.css or App.css */
+
+body.light-mode {
+  background-color: white;
+  color: black;
+}
+
+body.dark-mode {
+  background-color: black;
+  color: white;
+}
+
+/* Additional styles for other components can go here */
 
 /* Light Mode (default) */
 body, .firstDiv {
@@ -232,4 +245,10 @@ html.dark .cardSect2, html.dark .mapcard1 {
 html.dark .footer {
   background-color: var(--bg-dark);
   color: var(--text-dark);
+}
+.Navlinks{
+  cursor: pointer;
+} 
+.drawer{
+  width: 30px;
 }

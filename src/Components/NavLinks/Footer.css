@@ -1,39 +1,62 @@
-/* Footer.css */
 .footer {
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
-  }
-  
+  /* background-color: #333; */
+  color: white;
+  /* padding: 20px 0; */
+  width: 100%; /* Ensures the footer spans the full width */
+}
+
+.footerDiv {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 50px;
+  justify-content: space-between; /* Space between sections */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  padding: 0 20px;
+}
+
+.footerDiv > div {
+  flex: 10; /* Distribute space evenly */
+  margin: 0 0px;
+  min-width: 280px; /* Ensure sections don’t shrink too much on small screens */
+}
+
+.fth4 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.ftul {
+  list-style: none;
+  padding: 0;
+}
+
+.ftul li {
+  margin: 5px 0;
+}
+
+.ftlnk {
+  color: white;
+  text-decoration: none;
+}
+
+.ftlnk:hover {
+  text-decoration: underline;
+}
+
+.lastDonor {
+  margin-top: 20px;
+}
+
+/* Media query for mobile screens */
+@media (max-width: 768px) {
   .footerDiv {
-    max-width: 1200px;
-    margin: 0 auto;
+    flex-direction: column; /* Stacks sections vertically on mobile */
+    align-items: center;
   }
-  
-  .fth4 {
-    font-weight: bold;
-    margin-bottom: 10px;
+
+  .footerDiv > div {
+    margin-bottom: 20px; /* Add some spacing between sections */
+    text-align: center; /* Center-align content for better mobile appearance */
   }
-  
-  .ftul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .ftul li {
-    margin: 5px 0;
-  }
-  
-  .ftlnk {
-    color: white;
-    text-decoration: none;
-  }
-  
-  .ftlnk:hover {
-    text-decoration: underline;
-  }
-  
-  .lastDonor {
-    margin-top: 20px;
-  }
-  
+}

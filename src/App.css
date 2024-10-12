@@ -13,3 +13,17 @@
     width: 4px;
     height: 4px;
 }
+/* styles.css or App.css */
+
+body.light-mode {
+    background-color: white;
+    color: black;
+  }
+  
+  body.dark-mode {
+    background-color: black;
+    color: white;
+  }
+  
+  /* Additional styles for other components can go here */
+  

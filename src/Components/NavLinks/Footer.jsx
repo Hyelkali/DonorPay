@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Typography, Grid } from '@mui/material';
 import InfoModal from '../InfoModal'; // Import the modal component
+import Subscription from './Subscription';
 import './Footer.css';
 
 const Footer = () => {
@@ -45,7 +46,7 @@ const Footer = () => {
 
   return (
     <footer className="footer">
-      <Box className="footerDiv" sx={{ backgroundColor: 'primary.main', color: 'white', p: 3 }}>
+      <Box className="footerDiv">
         <Grid container spacing={3}>
           {sections.map((section, index) => (
             <Grid item xs={6} sm={3} key={index}>
@@ -67,6 +68,7 @@ const Footer = () => {
           ))}
         </Grid>
         <div className="lastDonor" style={{ textAlign: 'center', marginTop: '20px' }}>
+          < Subscription />
           <Typography variant="body2">&copy; 2024 DonorPay. All rights reserved.</Typography>
         </div>
       </Box>
@@ -76,6 +78,7 @@ const Footer = () => {
         title={modalContent.title} 
         content={modalContent.content} 
       />
+      
     </footer>
   );
 };

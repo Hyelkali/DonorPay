@@ -1,14 +1,24 @@
 "use client";
 
 import React, { useState } from 'react';
-
+import Footer from "./Footer"
 import { Heart, Globe, Shield } from "lucide-react";
+import Navbar from './Navbar';
 import Button from "@/components/ui/Button"; // Adjust import path as necessary
+// import 'index.css';
 import "./About.css"
 
 const About = () => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+    document.documentElement.classList.toggle("dark", !darkMode);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100 dark:bg-gray-800">
+       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">About DonorPay</h1>
         <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
@@ -31,9 +41,9 @@ const About = () => {
           muted
           playsInline
           controls
-          className="w-full h-64 object-cover"
+          className="w-full h-64 object-cover rounded-lg"
         >
-          <source src="\../src/assets/Video/DonorPay.mp4" type="video/mp4" /> 
+          <source src="./Video/DonorPay.mp4" type="video/mp4" /> 
           Your browser does not support the video tag.
         </video>
         <section className="mb-12">
@@ -71,12 +81,15 @@ const About = () => {
             counts!
           </p>
           <Button size="lg" asChild>
-            <a href="/register" className="mt-6 inline-block text-white bg-primary-color hover:bg-blue-600 rounded-lg px-6 py-3">
+            <a href="/register" className="mt-2  center text-white bg-primary-color hover:bg-blue-300 rounded-lg px-3 py-1.5">
               Join Us Today
             </a>
           </Button>
         </section>
       </main>
+      <div className="footer">
+        <Footer />
+      </div>
     </div>
   );
 };

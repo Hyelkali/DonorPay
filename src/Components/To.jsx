@@ -1,223 +1,356 @@
-"use client";
-
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Menu,
-  Home as HomeIcon,
-  Info,
-  Mail,
-  LogIn,
-  UserPlus,
-  Heart,
-  DollarSign,
-  Shield,
-  Globe
-} from "lucide-react";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import CardContent from "@/components/ui/Card";
-import CardHeader from "@/components/ui/Card";
-import Sheet from "@/components/ui/Sheet";
-import SheetContent from "@/components/ui/Sheet";
-import SheetTrigger from "@/components/ui/Sheet";
+  Avatar,
+  Container,
+  Typography,
+  Box,
+  Divider,
+  Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Fade,
+  BottomNavigation,
+  BottomNavigationAction
+} from "@mui/material";
+import {
+  Menu as MenuIcon,
+  AccountBalanceWallet,
+  Payment,
+  Settings,
+  History,
+  Home
+} from "@mui/icons-material";
+import { auth, db } from "../firebaseConfig";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import { Wallet } from "./Payment/Wallet";
+import { TransactionHistory } from "./Payment/TransactionHistory";
+import { UserProfile } from "./Payment/UserProfile";
+import { PaymentForm } from "./Payment/PaymentForm";
+import { useToast } from "../Components/ui/use-toast";
 
-const Home = () => {
-  const [isLargeScreen, setIsLargeScreen] = React.useState(false);
+const Dashboard = () => {
+  const [userData, setUserData] = useState(null);
+  const [wallet, setWallet] = useState({ balance: 100 });
+  const [transactions, setTransactions] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const { addToast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [activeComponent, setActiveComponent] = useState("welcome");
+  const [fadeIn, setFadeIn] = useState(true);
+  const [bottomNavValue, setBottomNavValue] = useState("welcome");
+  const navigate = useNavigate();
 
-  React.useEffect(() => {
-    const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 960);
+  useEffect(() => {
+    const fetchData = async () => {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) setUserData(userSnap.data());
+
+      const transactionsRef = collection(
+        db,
+        `users/${auth.currentUser.uid}/transactions`
+      );
+      const transactionSnap = await getDocs(transactionsRef);
+      setTransactions(transactionSnap.docs.map((doc) => doc.data()));
+
+      fetchPayments();
+      fetchWallet();
+      fetchPaymentMethods();
     };
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    fetchData();
   }, []);
 
-  const navItems = [
-    { name: "Home", icon: <HomeIcon className="w-4 h-4 mr-2" />, to: "/" },
-    { name: "About", icon: <Info className="w-4 h-4 mr-2" />, to: "/about" },
-    {
-      name: "Contact",
-      icon: <Mail className="w-4 h-4 mr-2" />,
-      to: "/contact"
-    },
-    { name: "Log In", icon: <LogIn className="w-4 h-4 mr-2" />, to: "/login" },
-    {
-      name: "Sign Up",
-      icon: <UserPlus className="w-4 h-4 mr-2" />,
-      to: "/register"
+  const fetchPayments = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/payments");
+      if (!response.ok) throw new Error("Failed to fetch payments");
+      const data = await response.json();
+      setPayments(data);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch payments. Please try again.",
+        variant: "destructive"
+      });
     }
-  ];
+  };
 
-  <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white transition-all duration-500 flex flex-col">
-    <header className="flex bg-white shadow-sm py-4">
-      <div className="container mx-auto px-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-blue-600">DonorPay</h1>
-        {isLargeScreen ? (
-          <nav className="flex space-x-4">
-            {navItems.map((item, index) => (
-              <Button
-                key={index}
-                variant={index === 0 ? "default" : "outline"}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                asChild
-              >
-                <Link to={item.to} className="text-white no-underline">
-                  {item.icon}
-                  {item.name}
-                </Link>
-              </Button>
-            ))}
-          </nav>
-        ) : (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="border border-gray-300"
-              >
-                <Menu className="h-6 w-6 text-gray-600" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <nav className="flex flex-col space-y-4 mt-6">
-                {navItems.map((item, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    className="justify-start px-4 py-2 border-b border-gray-200 text-gray-600 hover:bg-gray-100"
-                    asChild
-                  >
-                    <Link to={item.to} className="flex items-center">
-                      {item.icon}
-                      {item.name}
-                    </Link>
-                  </Button>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
-        )}
-      </div>
-    </header>
+  const fetchWallet = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/wallet");
+      if (!response.ok) throw new Error("Failed to fetch wallet");
+      const data = await response.json();
+      setWallet(data);
+    } catch (error) {
+      console.error("Error fetching wallet:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch wallet balance. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
-    <main className="container mx-auto px-6 py-12 flex-grow">
-      <section className="text-center mb-12">
-        <h2 className="text-5xl font-bold mb-4 text-blue-600 transition-transform duration-300 hover:scale-105">
-          Empower Change with Every Donation
-        </h2>
-        <p className="text-xl text-gray-700 mb-8">
-          Join our global community of givers and make a difference today.
-        </p>
-      </section>
-      <section className="text-center mb-12">
-        <h2 className="text-5xl font-bold mb-4 text-blue-600 transition-transform duration-300 hover:scale-105">
-          Empower Change with Every Donation
-        </h2>
-        <p className="text-xl text-gray-700 mb-8">
-          Join our global community of givers and make a difference today.
-        </p>
-      </section>
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await fetch("http://localhost:3001/api/payment-methods");
+      if (!response.ok) throw new Error("Failed to fetch payment methods");
+      const data = await response.json();
+      setPaymentMethods(data);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch payment methods. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
-      <section className="mb-12">
-        <h3 className="text-3xl font-semibold text-center mb-8 text-gray-800">
-          Why Choose DonorPay?
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              title: "Trusted Platform",
-              icon: <Heart className="w-8 h-8 mb-4 text-blue-500" />
-            },
-            {
-              title: "Easy Transfers",
-              icon: <DollarSign className="w-8 h-8 mb-4 text-green-500" />
-            },
-            {
-              title: "Secure Payments",
-              icon: <Shield className="w-8 h-8 mb-4 text-red-500" />
-            }
-          ].map((item, index) => (
-            <Card
-              key={index}
-              className="hover:shadow-lg transition-shadow duration-300 overflow-hidden rounded-lg"
+  const handleComponentChange = (component) => {
+    setFadeIn(false);
+    setTimeout(() => {
+      setActiveComponent(component);
+      setFadeIn(true);
+    }, 300);
+    setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    navigate("/");
+
+    try {
+      await signOut(auth);
+      addToast({
+        title: "Success",
+        description: "Logged out successfully."
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  return (
+    <Box sx={{ display: "flex" }}>
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant="persistent"
+        anchor="left"
+        className="drawer"
+        open={open || window.innerWidth >= 768}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: window.innerWidth >= 768 ? 240 : 0,
+            boxSizing: "border-box",
+            display: { xs: "none", sm: "block" }
+          }
+        }}
+      >
+        <Box sx={{ width: 240, textAlign: "center", mt: 2 }}>
+          <Typography variant="h6" align="center" sx={{ p: 2 }}>
+            User Dashboard
+          </Typography>
+          <Divider />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center"
+            }}
+          >
+            <Avatar
+              src="/profile.jpg"
+              alt="User Profile"
+              sx={{ width: 80, height: 80, mb: 1 }}
+            />
+            <Typography variant="body1" align="center">
+              {userData?.firstName || userData?.surname}
+            </Typography>
+          </Box>
+          <Divider sx={{ my: 4 }} />
+          <List>
+            <ListItem button onClick={() => handleComponentChange("welcome")}>
+              <ListItemIcon>
+                <Home />
+              </ListItemIcon>
+              <ListItemText primary="Home" />
+            </ListItem>
+            <ListItem button onClick={() => handleComponentChange("wallet")}>
+              <ListItemIcon>
+                <AccountBalanceWallet />
+              </ListItemIcon>
+              <ListItemText primary="Wallet" />
+            </ListItem>
+            <ListItem button onClick={() => handleComponentChange("deposit")}>
+              <ListItemIcon>
+                <Payment />
+              </ListItemIcon>
+              <ListItemText primary="Deposit" />
+            </ListItem>
+            <ListItem
+              button
+              onClick={() => handleComponentChange("transactions")}
             >
-              <CardHeader className="p-6">
-                <div className="flex flex-col items-center">
-                  {item.icon}
-                  <h4 className="text-xl font-semibold text-gray-700 mt-4">
-                    {item.title}
-                  </h4>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 pt-0">
-                <p className="text-center text-gray-600">
-                  {item.title === "Trusted Platform"
-                    ? "Join millions of donors who trust us to connect them with verified causes worldwide."
-                    : item.title === "Easy Transfers"
-                    ? "Send donations quickly and securely with just a few clicks."
-                    : "Your financial information is protected with state-of-the-art encryption."}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+              <ListItemIcon>
+                <History />
+              </ListItemIcon>
+              <ListItemText primary="Transactions" />
+            </ListItem>
+            <ListItem button onClick={() => handleComponentChange("settings")}>
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </ListItem>
+            <ListItem>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
 
-      <section className="text-center">
-        <h3 className="text-2xl font-semibold mb-4 text-gray-800">
-          Ready to Make a Difference?
-        </h3>
-        <Button
-          size="lg"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+      {/* Navbar for small screens */}
+      <Box sx={{ p: 2, flexGrow: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
         >
-          <Link to="/register">Get Started</Link>
-        </Button>
-      </section>
-    </main>
+          {userData?.name}
+          <Avatar
+            src="/profile.jpg"
+            alt="User Profile"
+            sx={{ width: 40, height: 40 }}
+          />
+        </Box>
 
-    <footer className="bg-gray-100 py-8 mt-auto border-t border-gray-200">
-      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
-        {[
-          "About DonorPay",
-          "For Donors",
-          "For Fundraisers",
-          "Connect With Us"
-        ].map((section, index) => (
-          <div key={index}>
-            <h4 className="font-semibold mb-4 text-gray-700">{section}</h4>
-            <ul className="space-y-2">
-              {[...Array(3)].map((_, i) => (
-                <li key={i}>
-                  <Link
-                    to="#"
-                    className="text-gray-600 hover:text-blue-600 transition"
-                  >
-                    {index === 0
-                      ? ["Our Story", "How It Works", "Testimonials"][i]
-                      : index === 1
-                      ? ["Find Causes", "Giving Guide", "Tax Deductions"][i]
-                      : index === 2
-                      ? [
-                          "Start a Campaign",
-                          "Fundraising Tips",
-                          "Success Stories"
-                        ][i]
-                      : ["Contact Support", "Facebook", "Twitter"][i]}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 text-center text-gray-500">
-        <p>&copy; 2024 DonorPay. All rights reserved.</p>
-      </div>
-    </footer>
-  </div>;
+        {/* Main Content Area */}
+        <Container maxWidth="md" sx={{ mt: 8 }}>
+          <Fade in={fadeIn}>
+            <Box>
+              {/* Display "Welcome, {userData?.name}" only on 'welcome' component */}
+              {activeComponent === "welcome" && (
+                <>
+                  <Typography variant="h4" gutterBottom>
+                    Welcome back, {userData?.name}
+                  </Typography>
+                  <Typography variant="h6" gutterBottom>
+                    Account Balance: ${wallet.balance}
+                  </Typography>
+                </>
+              )}
+              <Box mt={4}>
+                {activeComponent === "welcome" && (
+                  <Typography variant="h5">
+                    Welcome to your dashboard, {userData?.firstName}!
+                  </Typography>
+                )}
+                {activeComponent === "wallet" && (
+                  <Wallet balance={wallet.balance} />
+                )}
+                {activeComponent === "deposit" && <PaymentForm />}
+                {activeComponent === "transactions" && (
+                  <TransactionHistory transactions={transactions} />
+                )}
+                {activeComponent === "settings" && (
+                  <UserProfile user={userData} />
+                )}
+              </Box>
+            </Box>
+          </Fade>
+        </Container>
+      </Box>
+
+      {/* Bottom Navigation for mobile */}
+      <BottomNavigation
+        sx={{
+          width: "100%",
+          position: "fixed",
+          bottom: 0,
+          display: { xs: "flex", sm: "none" }
+        }}
+        value={bottomNavValue}
+        onChange={(event, newValue) => {
+          setBottomNavValue(newValue);
+          handleComponentChange(newValue);
+        }}
+      >
+        <BottomNavigationAction
+          label="Home"
+          value="welcome"
+          icon={<Home />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Wallet"
+          value="wallet"
+          icon={<AccountBalanceWallet />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Deposit"
+          value="deposit"
+          icon={<Payment />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Transactions"
+          value="transactions"
+          icon={<History />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Settings"
+          value="settings"
+          icon={<Settings />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+      </BottomNavigation>
+
+     
+    </Box>
+  );
 };
-export default Home;
+
+export default Dashboard;

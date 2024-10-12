@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Box, Paper, Link, Alert } from '@mui/material';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; // Ensure the correct path
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +14,7 @@ const Login = () => {
     try {
       setError(null); // Reset the error state before attempting login
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard');
+      navigate('/dashboard'); // Navigate to the dashboard on successful login
     } catch (error) {
       // Customize the error handling based on the error message
       if (error.code === 'auth/user-not-found') {
@@ -87,7 +87,7 @@ const Login = () => {
           </Link>
         </Box>
         <Box mt={1} textAlign="center">
-          <Link component={RouterLink} to="/signup" variant="body2">
+          <Link component={RouterLink} to="/register" variant="body2"> {/* Ensure this points to the correct signup route */}
             Don't have an account? Sign Up
           </Link>
         </Box>
