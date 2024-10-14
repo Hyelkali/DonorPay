@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Avatar,
@@ -13,11 +13,9 @@ import {
   ListItemIcon,
   ListItemText,
   IconButton,
-  Sun,
   Fade,
   BottomNavigation,
-  BottomNavigationAction,
-  CircularProgress,
+  BottomNavigationAction
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -25,10 +23,7 @@ import {
   Payment,
   Settings,
   History,
-  Home as HomeIcon,
-  Brightness4 as Brightness4Icon,
-  Notifications as NotificationsIcon,
-  Visibility as VisibilityIcon,
+  Home
 } from "@mui/icons-material";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -37,9 +32,7 @@ import { Wallet } from "./Payment/Wallet";
 import { TransactionHistory } from "./Payment/TransactionHistory";
 import { UserProfile } from "./Payment/UserProfile";
 import { PaymentForm } from "./Payment/PaymentForm";
-import { useToast } from "./ui/use-toast";
-
-const drawerWidth = 250;
+import { useToast } from "../Components/ui/use-toast";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
@@ -51,105 +44,138 @@ const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const [activeComponent, setActiveComponent] = useState("welcome");
   const [fadeIn, setFadeIn] = useState(true);
-  const [bottomNavValue, setBottomNavValue] = useState(0);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [loading, setLoading] = useState(true);
+  const [bottomNavValue, setBottomNavValue] = useState("welcome");
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
-      try {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) setUserData(userSnap.data());
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) setUserData(userSnap.data());
 
-        const transactionsRef = collection(
-          db,
-          `users/${auth.currentUser.uid}/transactions`
-        );
-        const transactionSnap = await getDocs(transactionsRef);
-        setTransactions(transactionSnap.docs.map((doc) => doc.data()));
+      const transactionsRef = collection(
+        db,
+        `users/${auth.currentUser.uid}/transactions`
+      );
+      const transactionSnap = await getDocs(transactionsRef);
+      setTransactions(transactionSnap.docs.map((doc) => doc.data()));
 
-        await fetchPayments();
-        await fetchWallet();
-        await fetchPaymentMethods();
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        addToast({
-          title: "Error",
-          description: "Failed to load data.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
+      fetchPayments();
+      fetchWallet();
+      fetchPaymentMethods();
     };
     fetchData();
-  }, [addToast]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const fetchPayments = async () => {
-    // Fetch payments logic here
+    try {
+      const response = await fetch("http://localhost:3001/api/payments");
+      if (!response.ok) throw new Error("Failed to fetch payments");
+      const data = await response.json();
+      setPayments(data);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch payments. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const fetchWallet = async () => {
-    // Fetch wallet logic here
+    try {
+      const response = await fetch("http://localhost:3001/api/wallet");
+      if (!response.ok) throw new Error("Failed to fetch wallet");
+      const data = await response.json();
+      setWallet(data);
+    } catch (error) {
+      console.error("Error fetching wallet:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch wallet balance. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const fetchPaymentMethods = async () => {
-    // Fetch payment methods logic here
+    try {
+      const response = await fetch("http://localhost:3001/api/payment-methods");
+      if (!response.ok) throw new Error("Failed to fetch payment methods");
+      const data = await response.json();
+      setPaymentMethods(data);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to fetch payment methods. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleComponentChange = useCallback((component) => {
+  const handleComponentChange = (component) => {
     setFadeIn(false);
     setTimeout(() => {
       setActiveComponent(component);
       setFadeIn(true);
     }, 300);
     setOpen(false);
-  }, []);
+  };
 
-  const handleLogout = useCallback(async () => {
+  const handleLogout = async () => {
+    navigate("/");
+
     try {
       await signOut(auth);
-      navigate("/");
       addToast({
         title: "Success",
-        description: "Logged out successfully.",
+        description: "Logged out successfully."
       });
     } catch (error) {
       console.error("Error logging out:", error);
       addToast({
         title: "Error",
         description: "Failed to log out. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
-  }, [navigate, addToast]);
+  };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex" }}>
+      {/* Sidebar Drawer */}
       <Drawer
-        variant={isMobile ? "temporary" : "persistent"}
+        variant="persistent"
         anchor="left"
-        open={isMobile ? open : true}
-        onClose={() => setOpen(false)}
+        className="drawer"
+        open={open || window.innerWidth >= 768}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: window.innerWidth >= 768 ? 240 : 0,
+            boxSizing: "border-box",
+            display: { xs: "none", sm: "block" }
+          }
+        }}
       >
-        <Box sx={{ width: drawerWidth, textAlign: "center", mt: 0 }}>
+        <Box sx={{ width: 240, textAlign: "center", mt: 2 }}>
           <Typography variant="h6" align="center" sx={{ p: 2 }}>
             User Dashboard
           </Typography>
           <Divider />
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <Avatar src="/profile.jpg" alt="User Profile" sx={{ width: 80, height: 80, mb: 1 }} />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center"
+            }}
+          >
+            <Avatar
+              src="/profile.jpg"
+              alt="User Profile"
+              sx={{ width: 80, height: 80, mb: 1 }}
+            />
             <Typography variant="body1" align="center">
               {userData?.firstName || userData?.surname}
             </Typography>
@@ -158,7 +184,7 @@ const Dashboard = () => {
           <List>
             <ListItem button onClick={() => handleComponentChange("welcome")}>
               <ListItemIcon>
-                <HomeIcon />
+                <Home />
               </ListItemIcon>
               <ListItemText primary="Home" />
             </ListItem>
@@ -174,7 +200,10 @@ const Dashboard = () => {
               </ListItemIcon>
               <ListItemText primary="Deposit" />
             </ListItem>
-            <ListItem button onClick={() => handleComponentChange("transactions")}>
+            <ListItem
+              button
+              onClick={() => handleComponentChange("transactions")}
+            >
               <ListItemIcon>
                 <History />
               </ListItemIcon>
@@ -187,7 +216,11 @@ const Dashboard = () => {
               <ListItemText primary="Settings" />
             </ListItem>
             <ListItem>
-              <Button variant="contained" color="warning" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </ListItem>
@@ -195,37 +228,127 @@ const Dashboard = () => {
         </Box>
       </Drawer>
 
-      <Box sx={{ flexGrow: 1, p: 3, marginLeft: { md: `${drawerWidth}px` } }}>
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 5 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Fade in={fadeIn}>
-            <Container>
-              {/* Components rendering based on state */}
-              {activeComponent === "welcome" && <div>Welcome</div>}
-              {activeComponent === "wallet" && <Wallet wallet={wallet} />}
-              {activeComponent === "transactions" && <TransactionHistory transactions={transactions} />}
-              {activeComponent === "deposit" && <PaymentForm paymentMethods={paymentMethods} />}
-              {activeComponent === "settings" && <UserProfile />}
-            </Container>
-          </Fade>
-        )}
+      {/* Navbar for small screens */}
+      <Box sx={{ p: 2, flexGrow: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
+          {userData?.name}
+          <Avatar
+            src="/profile.jpg"
+            alt="User Profile"
+            sx={{ width: 40, height: 40 }}
+          />
+        </Box>
 
-        {isMobile && (
-          <BottomNavigation
-            value={bottomNavValue}
-            onChange={(event, newValue) => setBottomNavValue(newValue)}
-            sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
-          >
-            <BottomNavigationAction label="Home" icon={<HomeIcon />} onClick={() => handleComponentChange("welcome")} />
-            <BottomNavigationAction label="Wallet" icon={<AccountBalanceWallet />} onClick={() => handleComponentChange("wallet")} />
-            <BottomNavigationAction label="Deposit" icon={<Payment />} onClick={() => handleComponentChange("deposit")} />
-            <BottomNavigationAction label="Transactions" icon={<History />} onClick={() => handleComponentChange("transactions")} />
-          </BottomNavigation>
-        )}
+        {/* Main Content Area */}
+        <Container maxWidth="md" sx={{ mt: 8 }}>
+          <Fade in={fadeIn}>
+            <Box>
+              {/* Display "Welcome, {userData?.name}" only on 'welcome' component */}
+              {activeComponent === "welcome" && (
+                <>
+                  <Typography variant="h4" gutterBottom>
+                    Welcome back, {userData?.name}
+                  </Typography>
+                  <Typography variant="h6" gutterBottom>
+                    Account Balance: ${wallet.balance}
+                  </Typography>
+                </>
+              )}
+              <Box mt={4}>
+                {activeComponent === "welcome" && (
+                  <Typography variant="h5">
+                    Welcome to your dashboard, {userData?.firstName}!
+                  </Typography>
+                )}
+                {activeComponent === "wallet" && (
+                  <Wallet balance={wallet.balance} />
+                )}
+                {activeComponent === "deposit" && <PaymentForm />}
+                {activeComponent === "transactions" && (
+                  <TransactionHistory transactions={transactions} />
+                )}
+                {activeComponent === "settings" && (
+                  <UserProfile user={userData} />
+                )}
+              </Box>
+            </Box>
+          </Fade>
+        </Container>
       </Box>
+
+      {/* Bottom Navigation for mobile */}
+      <BottomNavigation
+        sx={{
+          width: "100%",
+          position: "fixed",
+          bottom: 0,
+          display: { xs: "flex", sm: "none" }
+        }}
+        value={bottomNavValue}
+        onChange={(event, newValue) => {
+          setBottomNavValue(newValue);
+          handleComponentChange(newValue);
+        }}
+      >
+        <BottomNavigationAction
+          label="Home"
+          value="welcome"
+          icon={<Home />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Wallet"
+          value="wallet"
+          icon={<AccountBalanceWallet />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Deposit"
+          value="deposit"
+          icon={<Payment />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Transactions"
+          value="transactions"
+          icon={<History />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+        <BottomNavigationAction
+          label="Settings"
+          value="settings"
+          icon={<Settings />}
+          sx={{
+            color: "white",
+            textShadow:
+              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
+          }}
+        />
+      </BottomNavigation>
+
+     
     </Box>
   );
 };

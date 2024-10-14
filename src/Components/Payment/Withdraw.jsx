@@ -189,3 +189,4 @@ const Withdraw = ({ wallet, setWallet }) => {
   );
 };
 
+export default Withdraw;
