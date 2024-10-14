@@ -76,9 +76,75 @@ const Home = () => {
   const activeRoute = (route) => (location.pathname === route ? "active" : "");
 
   return (
-     <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
-  <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />      
-  <main className="mainCntr">
+    <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
+      <header className="header flex justify-between items-center py-4 px-6">
+        <div className="don">
+          <h1 className="donorPay text-2xl font-bold">DonorPay</h1>
+        </div>
+
+        <div className="actions flex items-center gap-4">
+          <button onClick={toggleDarkMode} className="toggleMode">
+            {darkMode ? (
+              <Moon className="toggleIcon" />
+            ) : (
+              <Sun className="toggleIcon" />
+            )}
+          </button>
+
+          {isLargeScreen ? (
+            <nav className="navbar flex gap-4 items-center">
+              {navItems.map((item, index) => (
+                <Button
+                  key={index}
+                  variant={index === 0 ? "default" : "contained"}
+                  asChild
+                >
+                  <Link to={item.href} className="btnlinks flex items-center ">
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                </Button>
+              ))}
+            </nav>
+          ) : (
+            <div className="flex items-center relative">
+              <button onClick={toggleMenu} className="relative z-10">
+                <Menu className="w-6 h-6" />
+              </button>
+
+              {isMenuOpen && (
+                <div className="absolute top-12 right-0 bg-white shadow-lg rounded-lg p-4 z-20">
+                  <nav className="flex flex-col gap-2">
+                    {navItems.map((item, index) => (
+                      <Button key={index} variant="ghost" asChild>
+                        <Link
+                          to={item.href}
+                          className="flex items-center gap-2"
+                        >
+                          {item.icon}
+                          {item.name}
+                        </Link>
+                      </Button>
+                    ))}
+                    <button
+                      onClick={toggleDarkMode}
+                      className="flex items-center gap-2"
+                    >
+                      {darkMode ? (
+                        <Moon className="toggleIcon" />
+                      ) : (
+                        <Sun className="toggleIcon" />
+                      )}
+                      <span>{darkMode ? "Dark Mode" : "Light Mode"}</span>
+                    </button>
+                  </nav>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+      <main className="mainCntr">
         <section className="mainSect relative">
           {/* Background Video */}
           <div className="video-background absolute inset-0 z-0 overflow-hidden">

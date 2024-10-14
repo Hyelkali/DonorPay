@@ -11,6 +11,7 @@ import Verify from './Components/Verify';
 import Navbar from './Components/NavLinks/Navbar'
 import Popup from './Components/Popup';
 import Subscription from './Components/NavLinks/Subscription'
+import Withdraw from './Components/Payment/Withdraw';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+  }, 
+  {
+    path: "/withdraw",
+    element: <Withdraw />,
   }, 
   {
     path: "/about",
@@ -56,6 +61,7 @@ const router = createBrowserRouter([
     path: "/Subscription",
     element: <Subscription />,
   },
+  
   {
     path: "/Verify",
     element: <Verify />
