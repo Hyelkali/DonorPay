@@ -3,14 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  UserPlus,
+
   Heart,
   DollarSign,
   Shield,
-  Globe,
-  Sun,
-  Moon,
-  Menu,
+
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
@@ -61,76 +58,25 @@ const Home = () => {
 
   const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
 
-  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
-
-  const activeRoute = (route) => (location.pathname === route ? "active" : "");
-
+  
   useEffect(() => {
     console.log("Dark mode:", darkMode);
     document.body.classList.toggle("dark-mode", darkMode);
     document.body.classList.toggle("light-mode", !darkMode);
   }, [darkMode]);
 
-  const navItems = [
-    { name: "Home", href: "/", icon: <Heart /> },
-    { name: "About", href: "/about", icon: <Globe /> },
-    { name: "Donate", href: "/donate", icon: <DollarSign /> },
-  ];
-
-  const isLargeScreen = window.innerWidth >= 768;
-
+ 
   return (
     <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
-      <header className="header flex justify-between items-center py-4 px-6">
-        <h1 className="donorPay text-2xl font-bold">DonorPay</h1>
-        <div className="actions flex items-center gap-4">
-          <button onClick={toggleDarkMode} className="toggleMode">
-            {darkMode ? <Moon className="toggleIcon" /> : <Sun className="toggleIcon" />}
-          </button>
+      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-          {isLargeScreen ? (
-            <nav className="navbar flex gap-4 items-center">
-              {navItems.map((item, index) => (
-                <Button key={index} asChild variant={index === 0 ? "default" : "contained"}>
-                  <Link to={item.href} className={`btnlinks ${activeRoute(item.href)}`}>
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                </Button>
-              ))}
-            </nav>
-          ) : (
-            <div className="relative">
-              <button onClick={toggleMenu} className="relative z-10">
-                <Menu className="w-6 h-6" />
-              </button>
-              {isMenuOpen && (
-                <div className="absolute top-12 right-0 bg-white shadow-lg rounded-lg p-4 z-20">
-                  <nav className="flex flex-col gap-2">
-                    {navItems.map((item, index) => (
-                      <Button key={index} asChild variant="ghost">
-                        <Link to={item.href} className="flex items-center gap-2">
-                          {item.icon}
-                          {item.name}
-                        </Link>
-                      </Button>
-                    ))}
-                  </nav>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      <header className="">
+       
       </header>
 
-      <main className="mainCntr">
+      <main className="mainCntr justify-center">
         <section className="mainSect relative">
-          <div className="video-background absolute inset-0 z-0 overflow-hidden">
-            <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src="/path-to-your-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
+          
           <div className="relative z-10 text-center text-white p-6 bg-black bg-opacity-50">
             <h2 className="text-3xl font-bold mb-4">Empower Change with Every Donation</h2>
             <p className="text-lg">Join our global community of givers today.</p>
