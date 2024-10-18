@@ -1,9 +1,8 @@
 // src/firebaseConfig.js
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, sendEmailVerification as sendVerificationEmail } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-
 // Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyC4m4DZwh6NzhCpv-Uvzd6N-3kDknu3QGY",
@@ -25,4 +24,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Export services
-export { auth, provider, db, storage };
+export { auth, provider, db, storage, sendVerificationEmail };

@@ -1,6 +1,13 @@
 // src/Components/Register.jsx
 import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendEmailVerification,
+  FacebookAuthProvider,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
 import { auth } from "../firebaseConfig"; // Corrected import of auth
@@ -18,42 +25,58 @@ const Register = () => {
   const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState("");
   const navigate = useNavigate(); // For navigating after successful registration
 
-    const handleRegister = async (e) => {
-      e.preventDefault();
-    
-      if (password !== confirmPassword) {
-        showError("Passwords do not match!");
-        return;
-      }
-    
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-    
-        // Save user info to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          name: "", // Placeholder for name
-          address: "", // Placeholder for address
-        });
-    
-        // Send email verification
-        await sendEmailVerification(user);
-        showAlert(`A verification email has been sent to ${user.email}. Please verify to proceed.`);
-        
-        // Navigate to the verify email page
-        navigate("/Verify");
-    
-      } catch (error) {
-        showError(error.message);
-      }
-    };
-    
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      showError("Oops! Passwords do not match. Please try again.");
+      return;
+    }
+
+    // Password strength validation
+    const passwordValid = validatePassword(password);
+    if (!passwordValid) {
+      showError("Password must contain at least 8 characters, including letters, numbers, and symbols.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save user info to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        name: "", // Placeholder for name
+        address: "", // Placeholder for address
+      });
+
+      // Send email verification
+      await sendEmailVerification(user);
+      showAlert(`A verification email has been sent to ${user.email}. Please check your inbox to verify your email.`);
+
+      // Navigate to the verify email page
+      navigate("/verify");
+    } catch (error) {
+      // Customize the error message based on Firebase errors
+      handleFirebaseError(error.code);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
+    await handleSocialSignIn(provider);
+  };
+
+  const handleFacebookSignIn = async () => {
+    const provider = new FacebookAuthProvider();
+    await handleSocialSignIn(provider);
+  };
+
+  const handleSocialSignIn = async (provider) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -66,10 +89,10 @@ const Register = () => {
         address: "", // Placeholder for address
       }, { merge: true });
 
-      showAlert(`Welcome, ${user.displayName}`);
+      showAlert(`Welcome, ${user.displayName}! You are now logged in.`);
       navigate("/dashboard"); // Redirect to dashboard after successful sign-in
     } catch (error) {
-      showError(error.message);
+      handleFirebaseError(error.code);
     }
   };
 
@@ -89,6 +112,31 @@ const Register = () => {
     setAlertMessage(""); // Clear the alert message after closing
   };
 
+  const handleFirebaseError = (errorCode) => {
+    let message;
+    switch (errorCode) {
+      case "auth/invalid-email":
+        message = "The email address is badly formatted.";
+        break;
+      case "auth/email-already-in-use":
+        message = "The email address is already in use by another account.";
+        break;
+      case "auth/weak-password":
+        message = "The password is too weak. Please choose a stronger password.";
+        break;
+      default:
+        message = "An unexpected error occurred. Please try again.";
+        break;
+    }
+    showError(message);
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    setPasswordStrength(passwordRegex.test(password) ? "Strong" : "Weak");
+    return passwordRegex.test(password);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.formContainer}>
@@ -103,12 +151,15 @@ const Register = () => {
             style={styles.input}
           />
 
-          <label>Password</label>
+          <label>Password <span style={styles.passwordHint}>{passwordStrength && `(${passwordStrength})`}</span></label>
           <div style={styles.passwordContainer}>
             <input
               type={isPasswordVisible ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validatePassword(e.target.value);
+              }}
               required
               style={styles.input}
             />
@@ -143,10 +194,7 @@ const Register = () => {
         {/* Divider */}
         <div style={styles.divider} />
 
-        <GoogleButton
-          onClick={handleGoogleSignIn}
-          style={styles.googleButton}
-        />
+        <GoogleButton onClick={handleGoogleSignIn} style={styles.googleButton} />
 
         <p>
           Already have an account? <a href="/login">Login</a>
@@ -191,6 +239,9 @@ const styles = {
     fontSize: "16px",
     width: "100%",
   },
+  a:{
+    color: "blue",
+  },
   passwordContainer: {
     position: "relative",
     width: "100%",
@@ -220,6 +271,11 @@ const styles = {
     width: "100%",
     marginTop: "15px",
   },
+ 
+  passwordHint: {
+    fontSize: "12px",
+    color: "#888",
+  },
 };
 
-export default Register; // Export Register as the default
+export default Register;

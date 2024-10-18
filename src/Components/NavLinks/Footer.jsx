@@ -45,15 +45,15 @@ const Footer = () => {
   };
 
   return (
-    <footer className="footer">
+    <footer className="footer " style={{ textAlign: 'center', marginTop: '20px' }}>
       <Box className="footerDiv">
-        <Grid container spacing={3}>
+        <Grid container spacing={3} >
           {sections.map((section, index) => (
             <Grid item xs={6} sm={3} key={index}>
               <Typography variant="h6" className="fth4">{section}</Typography>
               <ul className="ftul">
                 {links[section].map((link, i) => (
-                  <li key={i}>
+                  <li key={i} >
                     <Link
                       to="#"
                       className="ftlnk"

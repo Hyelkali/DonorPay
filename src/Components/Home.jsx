@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-
-  Heart,
-  DollarSign,
-  Shield,
-
-} from "lucide-react";
+import { Heart, DollarSign, Shield } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card, { CardContent, CardHeader } from "@/components/ui/Card";
 import InfoModal from "./InfoModal";
@@ -58,45 +52,37 @@ const Home = () => {
 
   const toggleDarkMode = () => setDarkMode((prevMode) => !prevMode);
 
-  
   useEffect(() => {
-    console.log("Dark mode:", darkMode);
     document.body.classList.toggle("dark-mode", darkMode);
     document.body.classList.toggle("light-mode", !darkMode);
   }, [darkMode]);
 
- 
   return (
-    <div className={`firstDiv ${darkMode ? "dark" : ""}`}>
-      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+    <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
+    <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
 
-      <header className="">
-       
-      </header>
-
-      <main className="mainCntr justify-center">
-        <section className="mainSect relative">
-          
-          <div className="relative z-10 text-center text-white p-6 bg-black bg-opacity-50">
-            <h2 className="text-3xl font-bold mb-4">Empower Change with Every Donation</h2>
-            <p className="text-lg">Join our global community of givers today.</p>
-          </div>
+      <main className="flex flex-col items-center justify-center flex-1 p-6 space-y-12 text-center">
+        <section className="relative w-full max-w-4xl bg-black bg-opacity-50 p-8 rounded-lg">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Empower Change with Every Donation
+          </h2>
+          <p className="text-lg text-white">Join our global community of givers today.</p>
         </section>
 
-        <section className="mainSect2">
-          <h3>Why Choose DonorPay?</h3>
-          <div className="trstedGrid">
+        <section className="w-full max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-8 p-6">          
+          <h3 className="text-2xl font-semibold mb-8">Why Choose DonorPay?</h3>
+          <div className="grid gap-6 md:grid-cols-3 items-center justify-center gap-8 p-8 w-8xl icons" >
             {[
-              { title: "Trusted Platform", icon: <Heart /> },
-              { title: "Easy Transfers", icon: <DollarSign /> },
-              { title: "Secure Payments", icon: <Shield /> },
+              { title: "Trusted Platform", icon: <Heart size={48} /> },
+              { title: "Easy Transfers", icon: <DollarSign size={48}/> },
+              { title: "Secure Payments", icon: <Shield size={48} /> },
             ].map((item, index) => (
-              <Card key={index} className="cardSect2">
-                <CardHeader className="flex items-center">
+              <Card key={index} className="p-6">
+                <CardHeader className="flex items-center justify-center space-x-3 mb-4">
                   {item.icon}
-                  <h4>{item.title}</h4>
+                  <h4 className="text-lg font-semibold">{item.title}</h4>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-center">
                   <p>
                     {item.title === "Trusted Platform"
                       ? "Join millions of donors trusting us to connect them with verified causes."
@@ -110,23 +96,26 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="mainSect4">
-          <h3>Ready to Make a Difference?</h3>
-          <Button size="lg" asChild>
-            <Link to="/register">Get Started</Link>
+        <section className="text-center">
+          <h3 className="text-2xl font-semibold mb-6">Ready to Make a Difference?</h3>
+          <Button size="lg" className="hover:bg-cyan-400" asChild>
+            <Link to="/register" >Get Started</Link>
           </Button>
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="footerDiv">
+      <footer className="w-full bg-gray-800 text-white p-6">
+        <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2">
           {Object.keys(footerLinks).map((section, index) => (
             <div key={index}>
-              <h4>{section}</h4>
+              <h4 className="text-lg font-bold mb-5">{section}</h4>
               <ul>
                 {footerLinks[section].map((link, i) => (
                   <li key={i}>
-                    <button onClick={() => handleOpenModal(link.title, link.content)}>
+                    <button size="xl"
+                      className="p-3 bg-blue-800  rounded-lg hover:underline hover:bg-cyan-500 mb-4"
+                      onClick={() => handleOpenModal(link.title, link.content)}
+                    >
                       {link.title}
                     </button>
                   </li>
@@ -134,12 +123,17 @@ const Home = () => {
               </ul>
             </div>
           ))}
-          <Subscription />
-          <p>&copy; 2024 DonorPay. All rights reserved.</p>
         </div>
+        <Subscription />
+        <p className="text-center mt-8">&copy; 2024 DonorPay. All rights reserved.</p>
       </footer>
 
-      <InfoModal open={openModal} handleClose={handleCloseModal} title={modalContent.title} content={modalContent.content} />
+      <InfoModal
+        open={openModal}
+        handleClose={handleCloseModal}
+        title={modalContent.title}
+        content={modalContent.content}
+      />
     </div>
   );
 };

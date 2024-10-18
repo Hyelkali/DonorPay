@@ -1,96 +1,39 @@
 /* src/Components/Verify.css */
 .verify-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f9f9f9;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  h2 {
-    font-size: 2em;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  label {
-    font-size: 1.2em;
-    color: #333;
-  }
-  
-  input {
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1em;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    width: 250px;
-    text-align: center;
-  }
-  
-  button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-  }
-  
-  button:disabled {
-    background-color: #a0cfff;
-  }
-  
-  /* Popup Styling */
-  .popup {
-    position: fixed;
-    top: -100px;
-    left: -400px; /* Initially off-screen */
-    width: 300px;
-    padding: 20px;
-    text-align: center;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-size: 1.2em;
-    z-index: 1000;
-    transition: all 0.5s ease; /* Transition effect */
-  }
-  
-  .popup.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-  
-  .popup.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-  }
-  
-  /* Slide in from the left top */
-  .popup.show {
-    top: 20px;
-    left: 20px;
-  }
-  /* For smaller screens */
-@media (max-width: 600px) {
-    input {
-      width: 90%; /* Make the input field take up 90% of the screen width */
-    }
-  
-    .popup {
-      width: 90%; /* Adjust popup width to fit better on small screens */
-    }
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.verify-card {
+  text-align: center;
+  padding: 30px;
+  background-color: #1e293b;
+  border-radius: 8px;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.email-btn,
+.resend-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.email-btn:hover,
+.resend-btn:hover {
+  background-color: #2563eb;
+}
+
+.resend-link {
+  margin-top: 10px;
+  font-size: 14px;
+}

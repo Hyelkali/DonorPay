@@ -71,13 +71,13 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
             </button>
 
             {isMenuOpen && (
-              <div className="absolute top-12 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 z-20">
-                <nav className="flex flex-col gap-2">
+              <div className="absolute top-12 right-0 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-5 z-20">
+                <nav className="flex flex-col gap-4">
                   {navItems.map((item, index) => (
                     <Button key={index} variant="ghost" asChild>
                       <Link
                         to={item.href}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md ${
+                        className={`flex items-center gap-2 px-2 py-2 rounded-md ${
                           isActive(item.href)
                             ? "bg-blue-500 text-white"
                             : "text-gray-800 dark:text-gray-200"

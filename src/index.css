@@ -167,6 +167,9 @@ html.dark .toggleIcon {
 .mainSect2,
 .mainSect3,
 .mainSect4 {
+  justify-content: center;
+  align-items: center;
+  align-self: center;
   margin: 24px 0; /* Add vertical spacing between sections */
 }
 
@@ -188,13 +191,19 @@ html.dark .toggleIcon {
 .trstedGrid,
 .sect3Div1 {
   display: grid; /* Use grid for responsive layout */
+  align-items: center;
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); /* Responsive grid */
   gap: 22px; /* Gap between grid items */
 }
-
+.icons{
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+}
 .trstedGrid,
 .sect3Div1 {
   display: flex; /* Use flexbox to layout the items */
+  align-items: center;
   flex-wrap: wrap; /* Allow items to wrap onto the next line */
   justify-content: center; /* Center items horizontally */
   gap: 20px; /* Add space between items */

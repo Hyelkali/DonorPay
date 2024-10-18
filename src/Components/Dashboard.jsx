@@ -12,10 +12,10 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  IconButton,
   Fade,
   BottomNavigation,
-  BottomNavigationAction
+  BottomNavigationAction,
+  useMediaQuery
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,97 +23,38 @@ import {
   Payment,
   Settings,
   History,
-  Home
+  Home as HomeIcon
 } from "@mui/icons-material";
 import { auth, db } from "../firebaseConfig";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { signOut } from "firebase/auth";
-import { Wallet } from "./Payment/Wallet";
-import { TransactionHistory } from "./Payment/TransactionHistory";
-import { UserProfile } from "./Payment/UserProfile";
-import { PaymentForm } from "./Payment/PaymentForm";
 import { useToast } from "../Components/ui/use-toast";
+import Main from "./Dashboard/Main";
+import Wallet from "./Dashboard/Wallet";
+import Deposit from "./Dashboard/Deposit";
+import Transactions from "./Dashboard/Transactions";
+import DashSettings from "./Dashboard/DashSettings";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [wallet, setWallet] = useState({ balance: 100 });
   const [transactions, setTransactions] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
   const { addToast } = useToast();
   const [open, setOpen] = useState(false);
   const [activeComponent, setActiveComponent] = useState("welcome");
   const [fadeIn, setFadeIn] = useState(true);
   const [bottomNavValue, setBottomNavValue] = useState("welcome");
   const navigate = useNavigate();
+  const [totalDeposited, setTotalDeposited] = useState(0);
+  const isDesktop = useMediaQuery("(min-width:768px)");
 
   useEffect(() => {
     const fetchData = async () => {
-      const userRef = doc(db, "users", auth.currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) setUserData(userSnap.data());
-
-      const transactionsRef = collection(
-        db,
-        `users/${auth.currentUser.uid}/transactions`
-      );
-      const transactionSnap = await getDocs(transactionsRef);
-      setTransactions(transactionSnap.docs.map((doc) => doc.data()));
-
-      fetchPayments();
-      fetchWallet();
-      fetchPaymentMethods();
+      // Fetch user data from Firebase
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+      setUserData(userDoc.data());
     };
     fetchData();
-  }, []);
-
-  const fetchPayments = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/api/payments");
-      if (!response.ok) throw new Error("Failed to fetch payments");
-      const data = await response.json();
-      setPayments(data);
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      addToast({
-        title: "Error",
-        description: "Failed to fetch payments. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const fetchWallet = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/api/wallet");
-      if (!response.ok) throw new Error("Failed to fetch wallet");
-      const data = await response.json();
-      setWallet(data);
-    } catch (error) {
-      console.error("Error fetching wallet:", error);
-      addToast({
-        title: "Error",
-        description: "Failed to fetch wallet balance. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const fetchPaymentMethods = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/api/payment-methods");
-      if (!response.ok) throw new Error("Failed to fetch payment methods");
-      const data = await response.json();
-      setPaymentMethods(data);
-    } catch (error) {
-      console.error("Error fetching payment methods:", error);
-      addToast({
-        title: "Error",
-        description: "Failed to fetch payment methods. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
+  }, [addToast]);
 
   const handleComponentChange = (component) => {
     setFadeIn(false);
@@ -124,39 +65,31 @@ const Dashboard = () => {
     setOpen(false);
   };
 
-  const handleLogout = async () => {
-    navigate("/");
+  const handleDeposit = (amount) => {
+    setTotalDeposited((prev) => prev + parseFloat(amount));
+    setWallet((prev) => ({
+      ...prev,
+      balance: prev.balance + parseFloat(amount),
+    }));
+  };
 
-    try {
-      await signOut(auth);
-      addToast({
-        title: "Success",
-        description: "Logged out successfully."
-      });
-    } catch (error) {
-      console.error("Error logging out:", error);
-      addToast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/"); // Redirect to home after logout
   };
 
   return (
     <Box sx={{ display: "flex" }}>
-      {/* Sidebar Drawer */}
       <Drawer
         variant="persistent"
         anchor="left"
-        className="drawer"
-        open={open || window.innerWidth >= 768}
+        open={open || isDesktop}
         sx={{
           "& .MuiDrawer-paper": {
-            width: window.innerWidth >= 768 ? 240 : 0,
+            width: isDesktop ? 240 : 0,
             boxSizing: "border-box",
-            display: { xs: "none", sm: "block" }
-          }
+            display: { xs: "none", sm: "block" },
+          },
         }}
       >
         <Box sx={{ width: 240, textAlign: "center", mt: 2 }}>
@@ -164,63 +97,27 @@ const Dashboard = () => {
             User Dashboard
           </Typography>
           <Divider />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center"
-            }}
-          >
-            <Avatar
-              src="/profile.jpg"
-              alt="User Profile"
-              sx={{ width: 80, height: 80, mb: 1 }}
-            />
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             <Typography variant="body1" align="center">
               {userData?.firstName || userData?.surname}
             </Typography>
           </Box>
           <Divider sx={{ my: 4 }} />
           <List>
-            <ListItem button onClick={() => handleComponentChange("welcome")}>
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem button onClick={() => handleComponentChange("wallet")}>
-              <ListItemIcon>
-                <AccountBalanceWallet />
-              </ListItemIcon>
-              <ListItemText primary="Wallet" />
-            </ListItem>
-            <ListItem button onClick={() => handleComponentChange("deposit")}>
-              <ListItemIcon>
-                <Payment />
-              </ListItemIcon>
-              <ListItemText primary="Deposit" />
-            </ListItem>
-            <ListItem
-              button
-              onClick={() => handleComponentChange("transactions")}
-            >
-              <ListItemIcon>
-                <History />
-              </ListItemIcon>
-              <ListItemText primary="Transactions" />
-            </ListItem>
-            <ListItem button onClick={() => handleComponentChange("settings")}>
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              <ListItemText primary="Settings" />
-            </ListItem>
+            {[
+              { label: "Home", icon: <HomeIcon />, value: "welcome" },
+              { label: "Wallet", icon: <AccountBalanceWallet />, value: "wallet" },
+              { label: "Deposit", icon: <Payment />, value: "deposit" },
+              { label: "Transactions", icon: <History />, value: "transactions" },
+              { label: "Settings", icon: <Settings />, value: "settings" },
+            ].map(({ label, icon, value }) => (
+              <ListItem button key={label} onClick={() => handleComponentChange(value)}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={label} />
+              </ListItem>
+            ))}
             <ListItem>
-              <Button
-                variant="contained"
-                color="warning"
-                onClick={handleLogout}
-              >
+              <Button variant="contained" color="warning" onClick={handleLogout}>
                 Logout
               </Button>
             </ListItem>
@@ -228,67 +125,31 @@ const Dashboard = () => {
         </Box>
       </Drawer>
 
-      {/* Navbar for small screens */}
       <Box sx={{ p: 2, flexGrow: 1 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {userData?.name}
-          <Avatar
-            src="/profile.jpg"
-            alt="User Profile"
-            sx={{ width: 40, height: 40 }}
-          />
+          <Avatar src="/profile.jpg" alt="User Profile" sx={{ width: 40, height: 40 }} />
         </Box>
 
-        {/* Main Content Area */}
         <Container maxWidth="md" sx={{ mt: 8 }}>
           <Fade in={fadeIn}>
             <Box>
-              {/* Display "Welcome, {userData?.name}" only on 'welcome' component */}
-              {activeComponent === "welcome" && (
-                <>
-                  <Typography variant="h4" gutterBottom>
-                    Welcome back, {userData?.name}
-                  </Typography>
-                  <Typography variant="h6" gutterBottom>
-                    Account Balance: ${wallet.balance}
-                  </Typography>
-                </>
-              )}
-              <Box mt={4}>
-                {activeComponent === "welcome" && (
-                  <Typography variant="h5">
-                    Welcome to your dashboard, {userData?.firstName}!
-                  </Typography>
-                )}
-                {activeComponent === "wallet" && (
-                  <Wallet balance={wallet.balance} />
-                )}
-                {activeComponent === "deposit" && <PaymentForm />}
-                {activeComponent === "transactions" && (
-                  <TransactionHistory transactions={transactions} />
-                )}
-                {activeComponent === "settings" && (
-                  <UserProfile user={userData} />
-                )}
-              </Box>
+              {activeComponent === "welcome" && <Main userName={userData?.name} />}
+              {activeComponent === "wallet" && <Wallet balance={wallet.balance} />}
+              {activeComponent === "deposit" && <Deposit onDeposit={handleDeposit} />}
+              {activeComponent === "transactions" && <Transactions transactions={transactions} />}
+              {activeComponent === "settings" && <DashSettings user={userData} />}
             </Box>
           </Fade>
         </Container>
       </Box>
 
-      {/* Bottom Navigation for mobile */}
       <BottomNavigation
         sx={{
           width: "100%",
           position: "fixed",
           bottom: 0,
-          display: { xs: "flex", sm: "none" }
+          display: { xs: "flex", sm: "none" },
         }}
         value={bottomNavValue}
         onChange={(event, newValue) => {
@@ -296,59 +157,16 @@ const Dashboard = () => {
           handleComponentChange(newValue);
         }}
       >
-        <BottomNavigationAction
-          label="Home"
-          value="welcome"
-          icon={<Home />}
-          sx={{
-            color: "white",
-            textShadow:
-              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
-          }}
-        />
-        <BottomNavigationAction
-          label="Wallet"
-          value="wallet"
-          icon={<AccountBalanceWallet />}
-          sx={{
-            color: "white",
-            textShadow:
-              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
-          }}
-        />
-        <BottomNavigationAction
-          label="Deposit"
-          value="deposit"
-          icon={<Payment />}
-          sx={{
-            color: "white",
-            textShadow:
-              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
-          }}
-        />
-        <BottomNavigationAction
-          label="Transactions"
-          value="transactions"
-          icon={<History />}
-          sx={{
-            color: "white",
-            textShadow:
-              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
-          }}
-        />
-        <BottomNavigationAction
-          label="Settings"
-          value="settings"
-          icon={<Settings />}
-          sx={{
-            color: "white",
-            textShadow:
-              "0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan, 0 0 80px cyan"
-          }}
-        />
+        {[
+          { label: "Home", value: "welcome", icon: <HomeIcon /> },
+          { label: "Wallet", value: "wallet", icon: <AccountBalanceWallet /> },
+          { label: "Deposit", value: "deposit", icon: <Payment /> },
+          { label: "Transactions", value: "transactions", icon: <History /> },
+          { label: "Settings", value: "settings", icon: <Settings /> },
+        ].map(({ label, value, icon }) => (
+          <BottomNavigationAction key={label} label={label} value={value} icon={icon} />
+        ))}
       </BottomNavigation>
-
-     
     </Box>
   );
 };

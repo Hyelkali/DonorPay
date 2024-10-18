@@ -11,6 +11,12 @@ import Verify from './Components/Verify';
 import Navbar from './Components/NavLinks/Navbar'
 import Popup from './Components/Popup';
 import Subscription from './Components/NavLinks/Subscription'
+import Wallet  from './Components/Dashboard/Wallet';
+import Transaction  from './Components/Dashboard/Transactions';
+import DashSettings from './Components/Dashboard/DashSettings';
+import Main from './Components/Dashboard/Main';
+import Deposit from './Components/Dashboard/Deposit';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -19,6 +25,26 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/Deposit",
+    element: <Deposit />,
+  },
+  {
+    path: "/Main",
+    element: <Main />,
+  },
+  {
+    path: "/DashSettings",
+    element: <DashSettings />,
+  },
+  {
+    path: "/Transaction",
+    element: <Transaction />,
+  },
+  {
+    path: "/Wallet",
+    element: <Wallet />,
   },
   {
     path: "/login",
