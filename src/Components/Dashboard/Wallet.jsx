@@ -24,6 +24,7 @@ import { db, auth } from "../../firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
 import PaystackPop from "@paystack/inline-js";
 
+// List of banks for selection
 const banks = [
   "Access Bank", "FCMB", "First Bank", "Guaranty Trust Bank", 
   "Zenith Bank", "UBA", "Ecobank", "Standard Chartered Bank", 
@@ -40,16 +41,19 @@ const Wallet = ({ wallet, setWallet }) => {
   const [snackMessage, setSnackMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
   const { addToast } = useToast();
 
+  // Toggles balance visibility
   const toggleBalanceVisibility = () => setShowBalance(!showBalance);
 
+  // Handles account verification
   const handleVerifyAccount = () => {
     if (accountNumber && selectedBank) {
       const mockApiResponse = {
         bankName: selectedBank,
         accountNumber,
-        accountHolderName: "John Doe",
+        accountHolderName: "John Doe", // This can be replaced with a real API response
       };
       setBankDetails(mockApiResponse);
     } else {
@@ -61,6 +65,7 @@ const Wallet = ({ wallet, setWallet }) => {
     }
   };
 
+  // Handles withdrawal of funds
   const handleWithdraw = async () => {
     if (!auth.currentUser) {
       addToast({
@@ -84,6 +89,7 @@ const Wallet = ({ wallet, setWallet }) => {
     setLoading(true);
 
     try {
+      // Adding withdrawal transaction to Firestore
       await addDoc(collection(db, `users/${auth.currentUser.uid}/transactions`), {
         type: "withdrawal",
         amount: withdrawalAmount,
@@ -92,6 +98,7 @@ const Wallet = ({ wallet, setWallet }) => {
         timestamp: new Date(),
       });
 
+      // Update wallet balance
       setWallet((prev) => ({
         ...prev,
         balance: prev.balance - withdrawalAmount,
@@ -112,17 +119,20 @@ const Wallet = ({ wallet, setWallet }) => {
     }
   };
 
+  // Resets form fields
   const resetFields = () => {
     setAmount("");
     setSelectedBank("");
     setAccountNumber("");
     setBankDetails(null);
+    setPaymentInitiated(false);
   };
 
+  // Handles adding money to wallet
   const handleAddMoney = () => {
     const paystack = new PaystackPop();
     paystack.newTransaction({
-      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541",
+      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541", // Your Paystack test key
       amount: parseFloat(amount) * 100, // Convert to kobo
       email: auth.currentUser?.email,
       onSuccess: (transaction) => {
@@ -141,6 +151,41 @@ const Wallet = ({ wallet, setWallet }) => {
         });
       },
     });
+  };
+
+  // Handles payment initiation
+  const handlePayment = () => {
+    if (!auth.currentUser) {
+      addToast({
+        title: "Error",
+        description: "User not authenticated.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const paymentAmount = parseFloat(amount);
+    if (paymentAmount <= 0) {
+      addToast({
+        title: "Error",
+        description: "Invalid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    // Add to wallet balance
+    setWallet((prev) => ({
+      ...prev,
+      balance: prev.balance + paymentAmount,
+    }));
+
+    setSnackMessage(`₦${paymentAmount} added to wallet.`);
+    setSnackOpen(true);
+    resetFields();
+    setLoading(false);
   };
 
   return (
@@ -237,12 +282,32 @@ const Wallet = ({ wallet, setWallet }) => {
           </Box>
         )}
 
-        <Snackbar open={snackOpen} onClose={() => setSnackOpen(false)} autoHideDuration={3000}>
-          <Alert onClose={() => setSnackOpen(false)} severity="success">
-            {snackMessage}
-          </Alert>
-        </Snackbar>
+        {bankDetails ? (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handlePayment}
+            sx={{ mt: 2 }}
+          >
+            Confirm Payment
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleVerifyAccount}
+            sx={{ mt: 2 }}
+          >
+            Verify Account
+          </Button>
+        )}
       </CardContent>
+
+      <Snackbar open={snackOpen} autoHideDuration={6000} onClose={() => setSnackOpen(false)}>
+        <Alert onClose={() => setSnackOpen(false)} severity="success">
+          {snackMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 };

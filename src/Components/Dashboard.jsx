@@ -15,7 +15,7 @@ import {
   Fade,
   BottomNavigation,
   BottomNavigationAction,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,8 +23,9 @@ import {
   Payment,
   Settings,
   History,
-  Home as HomeIcon
+  Home as HomeIcon,
 } from "@mui/icons-material";
+import { LogOut } from "lucide-react";
 import { auth, db } from "../firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useToast } from "../Components/ui/use-toast";
@@ -33,6 +34,7 @@ import Wallet from "./Dashboard/Wallet";
 import Deposit from "./Dashboard/Deposit";
 import Transactions from "./Dashboard/Transactions";
 import DashSettings from "./Dashboard/DashSettings";
+import { doc, getDoc, collection, query, where, onSnapshot } from "firebase/firestore";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
@@ -44,7 +46,6 @@ const Dashboard = () => {
   const [fadeIn, setFadeIn] = useState(true);
   const [bottomNavValue, setBottomNavValue] = useState("welcome");
   const navigate = useNavigate();
-  const [totalDeposited, setTotalDeposited] = useState(0);
   const isDesktop = useMediaQuery("(min-width:768px)");
 
   useEffect(() => {
@@ -52,7 +53,24 @@ const Dashboard = () => {
       // Fetch user data from Firebase
       const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
       setUserData(userDoc.data());
+      
+      // Fetch transactions for the user
+      const transactionsQuery = query(
+        collection(db, "transactions"),
+        where("userId", "==", auth.currentUser.uid)
+      );
+
+      const unsubscribe = onSnapshot(transactionsQuery, (querySnapshot) => {
+        const transactionsData = [];
+        querySnapshot.forEach((doc) => {
+          transactionsData.push({ id: doc.id, ...doc.data() });
+        });
+        setTransactions(transactionsData);
+      });
+
+      return () => unsubscribe(); // Cleanup listener on unmount
     };
+    
     fetchData();
   }, [addToast]);
 
@@ -66,7 +84,6 @@ const Dashboard = () => {
   };
 
   const handleDeposit = (amount) => {
-    setTotalDeposited((prev) => prev + parseFloat(amount));
     setWallet((prev) => ({
       ...prev,
       balance: prev.balance + parseFloat(amount),
@@ -97,7 +114,13 @@ const Dashboard = () => {
             User Dashboard
           </Typography>
           <Divider />
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="body1" align="center">
               {userData?.firstName || userData?.surname}
             </Typography>
@@ -111,34 +134,65 @@ const Dashboard = () => {
               { label: "Transactions", icon: <History />, value: "transactions" },
               { label: "Settings", icon: <Settings />, value: "settings" },
             ].map(({ label, icon, value }) => (
-              <ListItem button key={label} onClick={() => handleComponentChange(value)}>
+              <ListItem
+                button
+                key={label}
+                onClick={() => handleComponentChange(value)}
+              >
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText primary={label} />
               </ListItem>
             ))}
-            <ListItem>
-              <Button variant="contained" color="warning" onClick={handleLogout}>
-                Logout
-              </Button>
-            </ListItem>
+            {activeComponent === "settings" && (
+              <ListItem>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={handleLogout}
+                  startIcon={<LogOut size={20} />}
+                >
+                  Logout
+                </Button>
+              </ListItem>
+            )}
           </List>
         </Box>
       </Drawer>
 
       <Box sx={{ p: 2, flexGrow: 1 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           {userData?.name}
-          <Avatar src="/profile.jpg" alt="User Profile" sx={{ width: 40, height: 40 }} />
+          <Avatar
+            src="/profile.jpg"
+            alt="User Profile"
+            sx={{ width: 40, height: 40 }}
+          />
         </Box>
 
         <Container maxWidth="md" sx={{ mt: 8 }}>
           <Fade in={fadeIn}>
             <Box>
-              {activeComponent === "welcome" && <Main userName={userData?.name} />}
-              {activeComponent === "wallet" && <Wallet balance={wallet.balance} />}
-              {activeComponent === "deposit" && <Deposit onDeposit={handleDeposit} />}
-              {activeComponent === "transactions" && <Transactions transactions={transactions} />}
-              {activeComponent === "settings" && <DashSettings user={userData} />}
+              {activeComponent === "welcome" && (
+                <Main userName={userData?.name} />
+              )}
+              {activeComponent === "wallet" && (
+                <Wallet balance={wallet.balance} />
+              )}
+              {activeComponent === "deposit" && (
+                <Deposit onDeposit={handleDeposit} />
+              )}
+              {activeComponent === "transactions" && (
+                <Transactions transactions={transactions} />
+              )}
+              {activeComponent === "settings" && (
+                <DashSettings user={userData} />
+              )}
             </Box>
           </Fade>
         </Container>
@@ -164,7 +218,12 @@ const Dashboard = () => {
           { label: "Transactions", value: "transactions", icon: <History /> },
           { label: "Settings", value: "settings", icon: <Settings /> },
         ].map(({ label, value, icon }) => (
-          <BottomNavigationAction key={label} label={label} value={value} icon={icon} />
+          <BottomNavigationAction
+            key={label}
+            label={label}
+            value={value}
+            icon={icon}
+          />
         ))}
       </BottomNavigation>
     </Box>

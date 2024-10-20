@@ -16,6 +16,7 @@ import Transaction  from './Components/Dashboard/Transactions';
 import DashSettings from './Components/Dashboard/DashSettings';
 import Main from './Components/Dashboard/Main';
 import Deposit from './Components/Dashboard/Deposit';
+import Contact from './Components/NavLinks/Contact';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
   {
     path: "/Main",
     element: <Main />,
+  },
+  {
+    path: "/Contact",
+    element: <Contact />,
   },
   {
     path: "/DashSettings",
