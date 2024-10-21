@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Card,
@@ -10,16 +10,16 @@ import {
   MenuItem,
   Snackbar,
   Alert,
-  CircularProgress,
+  CircularProgress
 } from "@mui/material";
 import {
   AccountBalanceWallet as WalletIcon,
   AddCircle as AddCircleIcon,
   Send as SendIcon,
   Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
+  VisibilityOff as VisibilityOffIcon
 } from "@mui/icons-material";
-import { useToast } from "../ui/use-toast"; 
+import { useToast } from "../ui/use-toast";
 import { db, auth } from "../../firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
 import PaystackPop from "@paystack/inline-js";
@@ -29,97 +29,80 @@ const banks = [
   "Access Bank", "FCMB", "First Bank", "Guaranty Trust Bank", 
   "Zenith Bank", "UBA", "Ecobank", "Standard Chartered Bank", 
   "Union Bank", "Wema Bank", "Sterling Bank", "Polaris Bank", 
-  "Heritage Bank", "Fidelity Bank", "Keystone Bank", "Opay", "Moniepoint"
+  "Heritage Bank", "Fidelity Bank", "Keystone Bank", 
+  "Opay", "Moniepoint"
 ];
 
-const Wallet = ({ wallet, setWallet }) => {
+const Wallet = ({ wallet = { balance: 0 }, setWallet }) => {
   const [amount, setAmount] = useState("");
+  const [showBalance, setShowBalance] = useState(false);
   const [selectedBank, setSelectedBank] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [bankDetails, setBankDetails] = useState(null);
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showBalance, setShowBalance] = useState(false);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+
   const { addToast } = useToast();
 
-  // Toggles balance visibility
-  const toggleBalanceVisibility = () => setShowBalance(!showBalance);
+  const toggleBalanceVisibility = () => setShowBalance((prev) => !prev);
 
-  // Handles account verification
+  useEffect(() => {
+    const fetchWallet = async () => {
+      const walletData = await getWalletData(); // Example API call
+      setWallet(walletData || { balance: 0 });
+    };
+    fetchWallet();
+  }, []);
+
   const handleVerifyAccount = () => {
     if (accountNumber && selectedBank) {
       const mockApiResponse = {
         bankName: selectedBank,
         accountNumber,
-        accountHolderName: "John Doe", // This can be replaced with a real API response
+        accountHolderName: "John Doe"
       };
       setBankDetails(mockApiResponse);
     } else {
       addToast({
         title: "Error",
         description: "Please select a bank and enter an account number.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
 
-  // Handles withdrawal of funds
   const handleWithdraw = async () => {
     if (!auth.currentUser) {
-      addToast({
-        title: "Error",
-        description: "User not authenticated.",
-        variant: "destructive",
-      });
+      addToast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
     }
 
     const withdrawalAmount = parseFloat(amount);
     if (withdrawalAmount <= 0 || withdrawalAmount > wallet.balance) {
-      addToast({
-        title: "Error",
-        description: "Invalid withdrawal amount.",
-        variant: "destructive",
-      });
+      addToast({ title: "Error", description: "Invalid withdrawal amount.", variant: "destructive" });
       return;
     }
 
     setLoading(true);
-
     try {
-      // Adding withdrawal transaction to Firestore
-      await addDoc(collection(db, `users/${auth.currentUser.uid}/transactions`), {
-        type: "withdrawal",
-        amount: withdrawalAmount,
-        bank: selectedBank,
-        accountNumber,
-        timestamp: new Date(),
-      });
-
-      // Update wallet balance
-      setWallet((prev) => ({
-        ...prev,
-        balance: prev.balance - withdrawalAmount,
-      }));
-
+      await addDoc(
+        collection(db, `users/${auth.currentUser.uid}/transactions`),
+        { type: "withdrawal", amount: withdrawalAmount, bank: selectedBank, accountNumber, timestamp: new Date() }
+      );
+      setWallet((prev) => ({ ...prev, balance: prev.balance - withdrawalAmount }));
       setSnackMessage(`Successfully withdrawn ₦${withdrawalAmount} to ${selectedBank}.`);
       setSnackOpen(true);
       resetFields();
     } catch (error) {
       console.error("Transaction failed:", error);
-      addToast({
-        title: "Error",
-        description: "Transaction failed. Please try again.",
-        variant: "destructive",
-      });
+      addToast({ title: "Error", description: "Transaction failed. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Resets form fields
   const resetFields = () => {
     setAmount("");
     setSelectedBank("");
@@ -128,97 +111,52 @@ const Wallet = ({ wallet, setWallet }) => {
     setPaymentInitiated(false);
   };
 
-  // Handles adding money to wallet
   const handleAddMoney = () => {
     const paystack = new PaystackPop();
     paystack.newTransaction({
-      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541", // Your Paystack test key
-      amount: parseFloat(amount) * 100, // Convert to kobo
+      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541",
+      amount: parseFloat(amount) * 100,
       email: auth.currentUser?.email,
-      onSuccess: (transaction) => {
-        setWallet((prev) => ({
-          ...prev,
-          balance: prev.balance + parseFloat(amount),
-        }));
-        setSnackMessage(`Successfully added ₦${amount} to wallet.`);
-        setSnackOpen(true);
-      },
-      onCancel: () => {
-        addToast({
-          title: "Payment Cancelled",
-          description: "You cancelled the payment.",
-          variant: "warning",
-        });
-      },
+      onSuccess: () => handlePaymentSuccess(amount),
+      onCancel: () => addToast({ title: "Payment Cancelled", description: "You cancelled the payment.", variant: "warning" })
     });
   };
 
-  // Handles payment initiation
+  const handlePaymentSuccess = (paymentAmount) => {
+    const amountToAdd = parseFloat(paymentAmount);
+    setWallet((prev) => ({ ...prev, balance: prev.balance + amountToAdd }));
+    setSnackMessage(`Successfully added ₦${paymentAmount} to wallet.`);
+    setSnackOpen(true);
+    resetFields();
+  };
+
   const handlePayment = () => {
     if (!auth.currentUser) {
-      addToast({
-        title: "Error",
-        description: "User not authenticated.",
-        variant: "destructive",
-      });
+      addToast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
     }
 
     const paymentAmount = parseFloat(amount);
     if (paymentAmount <= 0) {
-      addToast({
-        title: "Error",
-        description: "Invalid amount.",
-        variant: "destructive",
-      });
+      addToast({ title: "Error", description: "Invalid amount.", variant: "destructive" });
       return;
     }
 
     setLoading(true);
-
-    // Add to wallet balance
-    setWallet((prev) => ({
-      ...prev,
-      balance: prev.balance + paymentAmount,
-    }));
-
-    setSnackMessage(`₦${paymentAmount} added to wallet.`);
-    setSnackOpen(true);
-    resetFields();
+    handlePaymentSuccess(paymentAmount);
     setLoading(false);
   };
 
   return (
-    <Card
-      sx={{
-        background: "linear-gradient(135deg, #0052D4, #4364F7)",
-        borderRadius: 3,
-        padding: 2,
-        color: "#fff",
-        position: "relative",
-        overflow: "hidden",
-        boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
-      }}
-    >
+    <Card sx={{ background: "linear-gradient(135deg, #0052D4, #4364F7)", borderRadius: 3, padding: 2, color: "#fff", position: "relative", overflow: "hidden", boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)" }}>
       <CardContent>
-        <IconButton
-          onClick={toggleBalanceVisibility}
-          sx={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            color: "#fff",
-            "&:hover": { color: "#FFD700" },
-          }}
-        >
+        <IconButton onClick={toggleBalanceVisibility} sx={{ position: "absolute", top: 10, right: 10, color: "#fff", "&:hover": { color: "#FFD700" } }}>
           {showBalance ? <VisibilityOffIcon /> : <VisibilityIcon />}
         </IconButton>
 
         <Box display="flex" alignItems="center" mb={2}>
           <WalletIcon fontSize="large" sx={{ mr: 1 }} />
-          <Typography variant="h5" fontWeight="bold">
-            Total Balance
-          </Typography>
+          <Typography variant="h5" fontWeight="bold">Total Balance</Typography>
         </Box>
 
         <Typography variant="h4" gutterBottom>
@@ -226,52 +164,19 @@ const Wallet = ({ wallet, setWallet }) => {
         </Typography>
 
         <Box display="flex" justifyContent="space-between" mb={2}>
-          <Button
-            startIcon={<AddCircleIcon />}
-            onClick={handleAddMoney}
-            sx={{ backgroundColor: "#1565C0", color: "#fff", "&:hover": { backgroundColor: "#1E88E5" } }}
-          >
+          <Button startIcon={<AddCircleIcon />} onClick={handleAddMoney} sx={{ backgroundColor: "#1565C0", color: "#fff", "&:hover": { backgroundColor: "#1E88E5" } }}>
             Add Money
           </Button>
-          <Button
-            startIcon={<SendIcon />}
-            onClick={handleWithdraw}
-            sx={{ backgroundColor: "#FFB300", color: "#fff", "&:hover": { backgroundColor: "#FFCA28" } }}
-            disabled={loading}
-          >
+          <Button startIcon={<SendIcon />} onClick={handleWithdraw} sx={{ backgroundColor: "#FFB300", color: "#fff", "&:hover": { backgroundColor: "#FFCA28" } }} disabled={loading}>
             {loading ? <CircularProgress size={24} /> : "Withdraw"}
           </Button>
         </Box>
 
-        <TextField
-          label="Amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          fullWidth
-          sx={{ mt: 2 }}
-        />
-        <TextField
-          label="Select Bank"
-          select
-          value={selectedBank}
-          onChange={(e) => setSelectedBank(e.target.value)}
-          fullWidth
-          sx={{ mt: 2 }}
-        >
-          {banks.map((bank) => (
-            <MenuItem key={bank} value={bank}>
-              {bank}
-            </MenuItem>
-          ))}
+        <TextField label="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} fullWidth sx={{ mt: 2 }} />
+        <TextField label="Select Bank" select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)} fullWidth sx={{ mt: 2 }}>
+          {banks.map((bank) => (<MenuItem key={bank} value={bank}>{bank}</MenuItem>))}
         </TextField>
-        <TextField
-          label="Account Number"
-          value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value)}
-          fullWidth
-          sx={{ mt: 2 }}
-        />
+        <TextField label="Account Number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} fullWidth sx={{ mt: 2 }} />
 
         {bankDetails && (
           <Box sx={{ mt: 2, p: 2, border: "1px solid #ccc" }}>
@@ -283,21 +188,11 @@ const Wallet = ({ wallet, setWallet }) => {
         )}
 
         {bankDetails ? (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handlePayment}
-            sx={{ mt: 2 }}
-          >
+          <Button variant="contained" color="primary" onClick={handlePayment} sx={{ mt: 2 }}>
             Confirm Payment
           </Button>
         ) : (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleVerifyAccount}
-            sx={{ mt: 2 }}
-          >
+          <Button variant="contained" color="secondary" onClick={handleVerifyAccount} sx={{ mt: 2 }}>
             Verify Account
           </Button>
         )}

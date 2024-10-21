@@ -6,7 +6,6 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   sendEmailVerification,
-  FacebookAuthProvider,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
@@ -71,10 +70,7 @@ const Register = () => {
     await handleSocialSignIn(provider);
   };
 
-  const handleFacebookSignIn = async () => {
-    const provider = new FacebookAuthProvider();
-    await handleSocialSignIn(provider);
-  };
+
 
   const handleSocialSignIn = async (provider) => {
     try {
@@ -125,7 +121,7 @@ const Register = () => {
         message = "The password is too weak. Please choose a stronger password.";
         break;
       default:
-        message = "An unexpected error occurred. Please try again.";
+        message = "An unexpected error occurred. Please check your internet connection and try again.";
         break;
     }
     showError(message);
@@ -241,6 +237,7 @@ const styles = {
   },
   a:{
     color: "blue",
+    backgroundColor: "#28a725",
   },
   passwordContainer: {
     position: "relative",

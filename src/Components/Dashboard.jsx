@@ -159,7 +159,7 @@ const Dashboard = () => {
         </Box>
       </Drawer>
 
-      <Box sx={{ p: 2, flexGrow: 1 }}>
+      <Box sx={{ p: 2, flexGrow: 4 }}>
         <Box
           sx={{
             display: "flex",

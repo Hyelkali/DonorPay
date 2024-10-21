@@ -131,12 +131,12 @@ const Contact = () => {
 
         <div className="flex items-center gap-4 mt-4">
           <Phone className="w-6 h-6 text-green-500" />
-          <span className="text-gray-800 dark:text-gray-200">+234 812 345 6789</span>
+          <span className="text-gray-800 dark:text-gray-200">+234 903 010 7976</span>
         </div>
 
         <div className="flex items-center gap-4 mt-4">
           <MapPin className="w-6 h-6 text-red-500" />
-          <span className="text-gray-800 dark:text-gray-200">123 Non-Profit St, Abuja, Nigeria</span>
+          <span className="text-gray-800 dark:text-gray-200">123 DonorPay-Payment, Abuja, Nigeria</span>
         </div>
       </div>
     </section>

@@ -5,9 +5,9 @@ import Footer from "./Footer"
 import { Heart, Globe, Shield } from "lucide-react";
 import Navbar from './Navbar';
 import Button from "@/components/ui/Button"; // Adjust import path as necessary
-// import DonorPayVideo from "../../Video/DonorPay.mp4";
+import DonorPayVideo from "../../Video/DonorPay.mp4";
 // import 'index.css';
-import "./About.css"
+
 
 const About = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -44,7 +44,7 @@ const About = () => {
           controls
           className="w-full h-64 object-cover rounded-lg"
         >
-          {/* <source src={DonorPayVideo} type="video/mp4" /> */}
+          <source src={DonorPayVideo} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <section className="mb-12">
