@@ -1,231 +1,170 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Avatar,
-  Container,
-  Typography,
   Box,
-  Divider,
-  Button,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
+  Container,
   Fade,
-  BottomNavigation,
-  BottomNavigationAction,
-  useMediaQuery,
+  AppBar,
+  Toolbar,
+  Typography,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  AccountBalanceWallet,
-  Payment,
-  Settings,
-  History,
-  Home as HomeIcon,
-} from "@mui/icons-material";
-import { LogOut } from "lucide-react";
-import { auth, db } from "../firebaseConfig";
-import { signOut } from "firebase/auth";
-import { useToast } from "../Components/ui/use-toast";
+import { setDoc, doc } from "firebase/firestore";
+import { useAuth } from "../../src/Components/Context/AuthContext";
+import { useToast } from "../hook/useToast";
 import Main from "./Dashboard/Main";
 import Wallet from "./Dashboard/Wallet";
 import Deposit from "./Dashboard/Deposit";
-import Transactions from "./Dashboard/Transactions";
+import Transaction from "./Dashboard/Transaction";
 import DashSettings from "./Dashboard/DashSettings";
-import { doc, getDoc, collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../firebaseConfig"; // Import your Firebase configuration
+import { Home, CreditCard, PiggyBank, BarChart2, Settings } from "lucide-react"; // Import Lucide icons
 
 const Dashboard = () => {
-  const [userData, setUserData] = useState(null);
-  const [wallet, setWallet] = useState({ balance: 100 });
-  const [transactions, setTransactions] = useState([]);
+  const { userData, wallet, setWallet } = useAuth();
   const { addToast } = useToast();
-  const [open, setOpen] = useState(false);
-  const [activeComponent, setActiveComponent] = useState("welcome");
+  const [activeComponent, setActiveComponent] = useState("Wallet"); // Set default to Wallet
   const [fadeIn, setFadeIn] = useState(true);
-  const [bottomNavValue, setBottomNavValue] = useState("welcome");
-  const navigate = useNavigate();
-  const isDesktop = useMediaQuery("(min-width:768px)");
+  const [transactions, setTransactions] = useState([]); // Added transactions state
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Fetch user data from Firebase
-      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-      setUserData(userDoc.data());
-      
-      // Fetch transactions for the user
-      const transactionsQuery = query(
-        collection(db, "transactions"),
-        where("userId", "==", auth.currentUser.uid)
-      );
+  const handleDeposit = async (amount) => {
+    try {
+      const newBalance = wallet.balance + amount;
 
-      const unsubscribe = onSnapshot(transactionsQuery, (querySnapshot) => {
-        const transactionsData = [];
-        querySnapshot.forEach((doc) => {
-          transactionsData.push({ id: doc.id, ...doc.data() });
-        });
-        setTransactions(transactionsData);
-      });
+      // Update the wallet in Firestore
+      await setDoc(doc(db, "wallets", userData.uid), { balance: newBalance });
 
-      return () => unsubscribe(); // Cleanup listener on unmount
-    };
-    
-    fetchData();
-  }, [addToast]);
+      // Update the local state
+      setWallet({ balance: newBalance });
 
-  const handleComponentChange = (component) => {
+      // Add transaction to local state
+      setTransactions((prev) => [
+        { id: Date.now(), type: "Deposit", amount, date: new Date().toLocaleString() },
+        ...prev,
+      ]);
+
+      // Notify user of success
+      addToast("Deposit successful!", { appearance: "success" });
+    } catch (error) {
+      console.error("Error depositing amount:", error);
+      addToast("Error depositing amount. Please try again.", { appearance: "error" });
+    }
+  };
+
+  const handleWithdrawal = async (amount) => {
+    try {
+      if (wallet.balance < amount) {
+        addToast("Insufficient balance for withdrawal.", { appearance: "error" });
+        return;
+      }
+
+      const newBalance = wallet.balance - amount;
+
+      // Update the wallet in Firestore
+      await setDoc(doc(db, "wallets", userData.uid), { balance: newBalance });
+
+      // Update the local state
+      setWallet({ balance: newBalance });
+
+      // Add transaction to local state
+      setTransactions((prev) => [
+        { id: Date.now(), type: "Withdrawal", amount, date: new Date().toLocaleString() },
+        ...prev,
+      ]);
+
+      // Notify user of success
+      addToast("Withdrawal successful!", { appearance: "success" });
+    } catch (error) {
+      console.error("Error withdrawing amount:", error);
+      addToast("Error withdrawing amount. Please try again.", { appearance: "error" });
+    }
+  };
+
+  const changeActiveComponent = (component) => {
+    setActiveComponent(component);
     setFadeIn(false);
     setTimeout(() => {
-      setActiveComponent(component);
       setFadeIn(true);
     }, 300);
-    setOpen(false);
   };
 
-  const handleDeposit = (amount) => {
-    setWallet((prev) => ({
-      ...prev,
-      balance: prev.balance + parseFloat(amount),
-    }));
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/"); // Redirect to home after logout
+  // Render the appropriate active component
+  const renderActiveComponent = () => {
+    switch (activeComponent) {
+      case "Home":
+        return <Main userName={userData?.name} />;
+      case "Wallet":
+        return <Wallet balance={wallet?.balance || 0} onWithdraw={handleWithdrawal} />; // Pass withdrawal handler
+      case "Deposit":
+        return <Deposit onDeposit={handleDeposit} />;
+      case "Transaction":
+        return <Transaction transactions={transactions} />;
+      case "Setting":
+        return <DashSettings user={userData} />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Drawer
-        variant="persistent"
-        anchor="left"
-        open={open || isDesktop}
-        sx={{
-          "& .MuiDrawer-paper": {
-            width: isDesktop ? 240 : 0,
-            boxSizing: "border-box",
-            display: { xs: "none", sm: "block" },
-          },
-        }}
-      >
-        <Box sx={{ width: 240, textAlign: "center", mt: 2 }}>
-          <Typography variant="h6" align="center" sx={{ p: 2 }}>
-            User Dashboard
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      {/* Navigation Bar for Desktop */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Dashboard {userData?.name}
           </Typography>
-          <Divider />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="body1" align="center">
-              {userData?.firstName || userData?.surname}
-            </Typography>
-          </Box>
-          <Divider sx={{ my: 4 }} />
-          <List>
-            {[
-              { label: "Home", icon: <HomeIcon />, value: "welcome" },
-              { label: "Wallet", icon: <AccountBalanceWallet />, value: "wallet" },
-              { label: "Deposit", icon: <Payment />, value: "deposit" },
-              { label: "Transactions", icon: <History />, value: "transactions" },
-              { label: "Settings", icon: <Settings />, value: "settings" },
-            ].map(({ label, icon, value }) => (
-              <ListItem
-                button
-                key={label}
-                onClick={() => handleComponentChange(value)}
-              >
-                <ListItemIcon>{icon}</ListItemIcon>
-                <ListItemText primary={label} />
-              </ListItem>
-            ))}
-            {activeComponent === "settings" && (
-              <ListItem>
-                <Button
-                  variant="contained"
-                  color="warning"
-                  onClick={handleLogout}
-                  startIcon={<LogOut size={20} />}
+        </Toolbar>
+      </AppBar>
+
+      <Box sx={{ display: "flex", flex: 1 }}>
+        {/* Left Sidebar for Desktop */}
+        <nav className="hidden md:flex flex-col justify-between w-64 bg-gray-800 text-white p-4">
+          <div className="space-y-4">
+            {[{ name: "Home", icon: Home },
+              { name: "Wallet", icon: CreditCard },
+              { name: "Deposit", icon: PiggyBank },
+              { name: "Transaction", icon: BarChart2 },
+              { name: "Setting", icon: Settings }].map((item) => (
+                <button
+                  key={item.name}
+                  className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${activeComponent === item.name ? "bg-blue-600" : "hover:bg-gray-700"}`}
+                  onClick={() => changeActiveComponent(item.name)}
                 >
-                  Logout
-                </Button>
-              </ListItem>
-            )}
-          </List>
-        </Box>
-      </Drawer>
+                  <item.icon className="w-6 h-6" />
+                  <span>{item.name}</span>
+                </button>
+              ))}
+          </div>
+        </nav>
 
-      <Box sx={{ p: 2, flexGrow: 4 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          {userData?.name}
-          <Avatar
-            src="/profile.jpg"
-            alt="User Profile"
-            sx={{ width: 40, height: 40 }}
-          />
-        </Box>
-
-        <Container maxWidth="md" sx={{ mt: 8 }}>
+        {/* Main Content Area */}
+        <Container maxWidth="md" sx={{ mt: 2, flex: 1 }}>
           <Fade in={fadeIn}>
             <Box>
-              {activeComponent === "welcome" && (
-                <Main userName={userData?.name} />
-              )}
-              {activeComponent === "wallet" && (
-                <Wallet balance={wallet.balance} />
-              )}
-              {activeComponent === "deposit" && (
-                <Deposit onDeposit={handleDeposit} />
-              )}
-              {activeComponent === "transactions" && (
-                <Transactions transactions={transactions} />
-              )}
-              {activeComponent === "settings" && (
-                <DashSettings user={userData} />
-              )}
+              {renderActiveComponent()}
             </Box>
           </Fade>
         </Container>
       </Box>
 
-      <BottomNavigation
-        sx={{
-          width: "100%",
-          position: "fixed",
-          bottom: 0,
-          display: { xs: "flex", sm: "none" },
-        }}
-        value={bottomNavValue}
-        onChange={(event, newValue) => {
-          setBottomNavValue(newValue);
-          handleComponentChange(newValue);
-        }}
-      >
-        {[
-          { label: "Home", value: "welcome", icon: <HomeIcon /> },
-          { label: "Wallet", value: "wallet", icon: <AccountBalanceWallet /> },
-          { label: "Deposit", value: "deposit", icon: <Payment /> },
-          { label: "Transactions", value: "transactions", icon: <History /> },
-          { label: "Settings", value: "settings", icon: <Settings /> },
-        ].map(({ label, value, icon }) => (
-          <BottomNavigationAction
-            key={label}
-            label={label}
-            value={value}
-            icon={icon}
-          />
-        ))}
-      </BottomNavigation>
+      {/* Bottom Navbar for Mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4">
+        <div className="flex justify-between">
+          {[{ name: "Home", icon: Home },
+            { name: "Wallet", icon: CreditCard },
+            { name: "Deposit", icon: PiggyBank },
+            { name: "Transaction", icon: BarChart2 },
+            { name: "Setting", icon: Settings }].map((item) => (
+              <button
+                key={item.name}
+                className={`flex flex-col items-center p-2 rounded-lg transition-colors ${activeComponent === item.name ? "text-blue-400" : "hover:text-gray-300"}`}
+                onClick={() => changeActiveComponent(item.name)}
+              >
+                <item.icon className="w-6 h-6" />
+                <span className="text-xs mt-1">{item.name}</span>
+              </button>
+            ))}
+        </div>
+      </nav>
     </Box>
   );
 };

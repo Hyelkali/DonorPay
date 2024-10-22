@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import { auth, db } from "../../firebaseConfig"; // Make sure you import your Firebase config
 import { doc, updateDoc } from "firebase/firestore";
+import Avat from "../../assets/avat.png"
+
 
 
 const DashSettings = ({ user }) => {
@@ -35,7 +37,7 @@ const DashSettings = ({ user }) => {
     <Box sx={{ mt: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <Card sx={{ width: "100%", maxWidth: 400, mb: 2 }}>
         <CardContent sx={{ textAlign: "center" }}>
-          <Avatar src="/profile.jpg" alt="User Profile" sx={{ width: 60, height: 60, margin: "auto" }} />
+          <Avatar src={Avat} alt="User Profile" sx={{ width: 60, height: 60, margin: "auto" }} />
           <Typography variant="h6">{user?.name}</Typography>
           <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
         </CardContent>

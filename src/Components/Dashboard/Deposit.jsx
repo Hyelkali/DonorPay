@@ -1,17 +1,9 @@
-// src/Dashboard/Deposit.jsx
 import React, { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  TextField, 
-  Button, 
-  Box 
-} from "@mui/material";
-import { auth } from "../../firebaseConfig"; // Ensure this is imported
+import { Card, CardContent, TextField, Button, Typography, Box } from "@mui/material";
+import { auth } from "../../firebaseConfig";
 
 const Deposit = ({ onDeposit }) => {
-  const [amount, setAmount] = useState(""); // State for deposit amount
+  const [amount, setAmount] = useState("");
 
   const handleDeposit = () => {
     if (!amount || amount <= 0) {
@@ -20,16 +12,17 @@ const Deposit = ({ onDeposit }) => {
     }
 
     const handler = window.PaystackPop.setup({
-      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541", // Replace with your Paystack public key
+      key: "pk_test_b7119ababa4c222d181f6f412c19d84f41763541", // Paystack public key
       email: auth.currentUser.email,
-      amount: amount * 100, // Convert Naira to kobo
+      amount: amount * 100, // Convert Naira to Kobo
       currency: "NGN",
-      callback: function (response) {
+      callback: (response) => {
         alert("Payment Successful: " + response.reference);
-        onDeposit(Number(amount)); // Update wallet balance
+        onDeposit(Number(amount)); // Call the function to update wallet balance
+        setAmount("");
       },
-      onClose: function () {
-        alert("Transaction was not completed, window closed.");
+      onClose: () => {
+        alert("Transaction not completed.");
       },
     });
 
@@ -37,58 +30,22 @@ const Deposit = ({ onDeposit }) => {
   };
 
   return (
-    <Box 
-      display="flex" 
-      justifyContent="center" 
-      alignItems="center" 
-      height="100vh" 
-      sx={{ backgroundColor: "#f4f6f8" }}
-    >
-      <Card 
-        sx={{
-          maxWidth: 400, 
-          padding: 3, 
-          boxShadow: 3, 
-          borderRadius: 2,
-          backgroundColor: "#fff"
-        }}
-      >
-        <CardContent>
-          <Typography 
-            variant="h5" 
-            component="div" 
-            sx={{ marginBottom: 2, textAlign: "center", fontWeight: 600 }}
-          >
-            Deposit Funds
-          </Typography>
-          <TextField
-            label="Enter Amount (NGN)"
-            type="number"
-            variant="outlined"
-            fullWidth
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            sx={{ marginBottom: 2 }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            onClick={handleDeposit}
-            sx={{ 
-              textTransform: "none", 
-              fontSize: "1rem", 
-              padding: "10px 0", 
-              backgroundColor: "#1976d2",
-              "&:hover": { backgroundColor: "#1565c0" }
-            }}
-          >
-            Deposit
-          </Button>
-        </CardContent>
-      </Card>
-    </Box>
+    <Card sx={{ maxWidth: 400, padding: 3, boxShadow: 3 }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>Deposit Funds</Typography>
+        <TextField
+          label="Enter Amount (NGN)"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <Button variant="contained" onClick={handleDeposit} fullWidth>
+          Deposit
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 
