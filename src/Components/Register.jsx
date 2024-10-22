@@ -1,4 +1,3 @@
-// src/Components/Register.jsx
 import React, { useState } from "react";
 import {
   getAuth,
@@ -9,11 +8,11 @@ import {
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
-import { auth } from "../firebaseConfig"; // Corrected import of auth
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig"; // Ensure Firestore is imported
-import { Eye, EyeOff } from "lucide-react"; // Import Eye and EyeOff icons
-import Popup from "./Popup"; // Import the Popup component
+import { auth } from "../firebaseConfig";
+import { doc, setDoc, getDoc } from "firebase/firestore"; // Added getDoc for checking existing users
+import { db } from "../firebaseConfig";
+import { Eye, EyeOff } from "lucide-react";
+import Popup from "./Popup";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +24,7 @@ const Register = () => {
   const [alertMessage, setAlertMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState("");
-  const navigate = useNavigate(); // For navigating after successful registration
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -35,7 +34,6 @@ const Register = () => {
       return;
     }
 
-    // Password strength validation
     const passwordValid = validatePassword(password);
     if (!passwordValid) {
       showError("Password must contain at least 8 characters, including letters, numbers, and symbols.");
@@ -46,47 +44,42 @@ const Register = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save user info to Firestore
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         name: "", // Placeholder for name
-        address: "", // Placeholder for address
+        address: "",
       });
 
-      // Send email verification
       await sendEmailVerification(user);
-      showAlert(`A verification email has been sent to ${user.email}. Please check your inbox to verify your email.`);
-
-      // Navigate to the verify email page
+      showAlert(`A verification email has been sent to ${user.email}. Please verify your email.`);
       navigate("/verify");
     } catch (error) {
-      // Customize the error message based on Firebase errors
       handleFirebaseError(error.code);
     }
   };
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    await handleSocialSignIn(provider);
-  };
+    provider.addScope("profile");
+    provider.addScope("email");
 
-
-
-  const handleSocialSignIn = async (provider) => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Save user info to Firestore if it's a new user
       const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, {
-        email: user.email,
-        name: user.displayName,
-        address: "", // Placeholder for address
-      }, { merge: true });
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          name: user.displayName,
+          address: "",
+        });
+      }
 
       showAlert(`Welcome, ${user.displayName}! You are now logged in.`);
-      navigate("/dashboard"); // Redirect to dashboard after successful sign-in
+      navigate("/dashboard");
     } catch (error) {
       handleFirebaseError(error.code);
     }
@@ -104,8 +97,8 @@ const Register = () => {
 
   const closePopup = () => {
     setShowPopup(false);
-    setError(""); // Clear the error message after closing
-    setAlertMessage(""); // Clear the alert message after closing
+    setError("");
+    setAlertMessage("");
   };
 
   const handleFirebaseError = (errorCode) => {
@@ -121,8 +114,7 @@ const Register = () => {
         message = "The password is too weak. Please choose a stronger password.";
         break;
       default:
-        message = "An unexpected error occurred. Please check your internet connection and try again.";
-        break;
+        message = "An unexpected error occurred. Please check your connection and try again.";
     }
     showError(message);
   };
@@ -147,7 +139,9 @@ const Register = () => {
             style={styles.input}
           />
 
-          <label>Password <span style={styles.passwordHint}>{passwordStrength && `(${passwordStrength})`}</span></label>
+          <label>
+            Password <span style={styles.passwordHint}>{passwordStrength && `(${passwordStrength})`}</span>
+          </label>
           <div style={styles.passwordContainer}>
             <input
               type={isPasswordVisible ? "text" : "password"}
@@ -187,7 +181,6 @@ const Register = () => {
           </button>
         </form>
 
-        {/* Divider */}
         <div style={styles.divider} />
 
         <GoogleButton onClick={handleGoogleSignIn} style={styles.googleButton} />
@@ -197,13 +190,10 @@ const Register = () => {
         </p>
       </div>
 
-      {showPopup && (error || alertMessage) && (
-        <Popup message={error || alertMessage} onClose={closePopup} />
-      )}
+      {showPopup && (error || alertMessage) && <Popup message={error || alertMessage} onClose={closePopup} />}
     </div>
   );
 };
-
 // Styles
 const styles = {
   container: {
