@@ -90,7 +90,7 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="w-full max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-8 p-6">
+        <section className="w-full max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-8 p-6 text-black">
           <h3 className="text-2xl font-semibold mb-8">Why Choose DonorPay?</h3>
           <div className="grid gap-6 md:grid-cols-3 items-center justify-center gap-8 p-8 w-8xl icons">
             {[
@@ -102,15 +102,15 @@ const Home = () => {
                 key={index}
                 className="p-6 bg-gray-800 rounded-lg shadow-lg"
               >
-                <CardHeader className="flex flex-col items-center justify-center text-center mb-4 space-y-3">
-                  <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-700">
+                <CardHeader className="flex flex-col items-center justify-center text-center mb-4 space-y-3 text-black">
+                  <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-700 text-black">
                     {item.icon}
                   </div>
-                  <h4 className="text-lg font-semibold text-white">
+                  <h4 className="text-lg font-semibold text-black">
                     {item.title}
                   </h4>
                 </CardHeader>
-                <CardContent className="text-center text-gray-300">
+                <CardContent className="text-center text-gray-300 text-black">
                   <p>
                     {item.title === "Trusted Platform"
                       ? "Join millions of donors trusting us to connect them with verified causes."
