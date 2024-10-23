@@ -5,7 +5,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   sendEmailVerification,
-} from "firebase/auth";
+} from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
 import { auth } from "../firebaseConfig";

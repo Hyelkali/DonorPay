@@ -24,4 +24,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Export services
-export { auth, provider, db, doc, getDoc, storage, sendVerificationEmail, firebaseOnAuthStateChanged };
+export { auth, provider, db, getAuth, getFirestore, getStorage, doc, getDoc, storage, sendVerificationEmail, firebaseOnAuthStateChanged };
