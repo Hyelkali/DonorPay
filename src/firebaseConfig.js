@@ -1,7 +1,7 @@
 // src/firebaseConfig.js
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, sendEmailVerification as sendVerificationEmail, onAuthStateChanged as firebaseOnAuthStateChanged } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 // Firebase configuration
 const firebaseConfig = {
@@ -24,4 +24,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Export services
-export { auth, provider, db, storage, sendVerificationEmail, firebaseOnAuthStateChanged };
+export { auth, provider, db, doc, getDoc, storage, sendVerificationEmail, firebaseOnAuthStateChanged };

@@ -1,14 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, TextField, Button, Typography, Box } from "@mui/material";
 import { auth } from "../../firebaseConfig";
 
 const Deposit = ({ onDeposit }) => {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(()=> {
+    // Get the initial state from localStorage if it exists
+    const savedName = localStorage.getItem('name');
+    return savedName ? JSON.parse(savedName) : '';
+});
+  useEffect(() => {
+    // Store the name in localStorage whenever it changes
+    localStorage.setItem('name', JSON.stringify(amount));
+}, [amount]);
+
 
   const handleDeposit = () => {
     if (!amount || amount <= 0) {
       alert("Please enter a valid amount.");
-      return;
+      return;    
     }
 
     const handler = window.PaystackPop.setup({
@@ -19,7 +28,6 @@ const Deposit = ({ onDeposit }) => {
       callback: (response) => {
         alert("Payment Successful: " + response.reference);
         onDeposit(Number(amount)); // Call the function to update wallet balance
-        setAmount("");
       },
       onClose: () => {
         alert("Transaction not completed.");
