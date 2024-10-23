@@ -8,9 +8,8 @@ import {
 } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import GoogleButton from "react-google-button";
-import { auth } from "../firebaseConfig";
-import { doc, setDoc, getDoc } from "firebase/firestore"; // Added getDoc for checking existing users
-import { db } from "../firebaseConfig";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db, auth } from "../firebaseConfig";
 import { Eye, EyeOff } from "lucide-react";
 import Popup from "./Popup";
 
@@ -34,6 +33,11 @@ const Register = () => {
       return;
     }
 
+    if (!isValidEmail(email)) {
+      showError("Please enter a valid email address.");
+      return;
+    }
+
     const passwordValid = validatePassword(password);
     if (!passwordValid) {
       showError("Password must contain at least 8 characters, including letters, numbers, and symbols.");
@@ -54,7 +58,7 @@ const Register = () => {
       showAlert(`A verification email has been sent to ${user.email}. Please verify your email.`);
       navigate("/verify");
     } catch (error) {
-      handleFirebaseError(error.code);
+      handleFirebaseError(error);
     }
   };
 
@@ -81,8 +85,13 @@ const Register = () => {
       showAlert(`Welcome, ${user.displayName}! You are now logged in.`);
       navigate("/dashboard");
     } catch (error) {
-      handleFirebaseError(error.code);
+      handleFirebaseError(error);
     }
+  };
+
+  const isValidEmail = (email) => {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
   };
 
   const showError = (message) => {
@@ -101,9 +110,10 @@ const Register = () => {
     setAlertMessage("");
   };
 
-  const handleFirebaseError = (errorCode) => {
+  const handleFirebaseError = (error) => {
+    console.error("Firebase error: ", error); // Log full error for debugging
     let message;
-    switch (errorCode) {
+    switch (error.code) {
       case "auth/invalid-email":
         message = "The email address is badly formatted.";
         break;
@@ -194,6 +204,7 @@ const Register = () => {
     </div>
   );
 };
+
 // Styles
 const styles = {
   container: {
@@ -225,10 +236,6 @@ const styles = {
     fontSize: "16px",
     width: "100%",
   },
-  a:{
-    color: "blue",
-    backgroundColor: "#28a725",
-  },
   passwordContainer: {
     position: "relative",
     width: "100%",
@@ -258,7 +265,6 @@ const styles = {
     width: "100%",
     marginTop: "15px",
   },
- 
   passwordHint: {
     fontSize: "12px",
     color: "#888",
