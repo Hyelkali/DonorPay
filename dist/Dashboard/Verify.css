@@ -1,0 +1,39 @@
+/* src/Components/Verify.css */
+.verify-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.verify-card {
+  text-align: center;
+  padding: 30px;
+  background-color: #1e293b;
+  border-radius: 8px;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.email-btn,
+.resend-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.email-btn:hover,
+.resend-btn:hover {
+  background-color: #2563eb;
+}
+
+.resend-link {
+  margin-top: 10px;
+  font-size: 14px;
+}
