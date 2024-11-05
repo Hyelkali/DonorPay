@@ -9,9 +9,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  build: {
-    rollupOptions: {
-      external: ['@paystack/inline-js'],
-    },
-  },
+  // build: {
+  //   rollupOptions: {
+  //     external: ['@paystack/inline-js'],
+  //   },
+  // },
 });
