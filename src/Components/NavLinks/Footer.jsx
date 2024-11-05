@@ -1,41 +1,40 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Typography, Grid } from '@mui/material';
-import InfoModal from '../InfoModal'; // Import the modal component
-import Subscription from './Subscription';
 import './Footer.css';
 
 const Footer = () => {
   const [openModal, setOpenModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
+  const [email, setEmail] = useState('');
 
   // Define sections and links with unique titles
-  const sections = ["About DonorPay", "For Donors", "For Fundraisers", "Connect With Us"];
-  const links = {
-    "About DonorPay": [
-      { title: "Our Story", content: "Details about our story..." },
-      { title: "How It Works", content: "Explanation of how it works..." },
-      { title: "Testimonials", content: "User testimonials..." }
-    ],
-    "For Donors": [
-      { title: "Find Causes", content: "How to find causes..." },
-      { title: "Giving Guide", content: "Guidance on giving..." },
-      { title: "Tax Deductions", content: "Information about tax deductions..." }
-    ],
-    "For Fundraisers": [
-      { title: "Start a Campaign", content: "How to start a campaign..." },
-      { title: "Fundraising Tips", content: "Tips for fundraising..." },
-      { title: "Success Stories", content: "Successful fundraising stories..." }
-    ],
-    "Connect With Us": [
-      { title: "Contact Support", content: "How to contact support..." },
-      { title: "Facebook", content: "Link to our Facebook page..." },
-      { title: "Twitter", content: "Link to our Twitter account..." }
-    ],
-  };
+  const sections = [
+    {
+      title: "About DonorPay",
+      links: [
+        { title: "Our Story", content: "DonorPay was founded in 2020 with a mission to make charitable giving easier and more transparent..." },
+        { title: "How It Works", content: "DonorPay connects donors directly with verified charities. Simply choose a cause, make a donation, and track your impact..." },
+        { title: "Testimonials", content: "\"DonorPay has revolutionized how I give to charities. It's so easy and transparent!\" - Jane D., Loyal Donor" }
+      ]
+    },
+    {
+      title: "Get Involved",
+      links: [
+        { title: "Donate Now", content: "Ready to make a difference? Choose from our curated list of causes and donate with just a few clicks." },
+        { title: "Volunteer", content: "We're always looking for passionate volunteers to help with various projects. Sign up today!" },
+        { title: "Partner With Us", content: "Are you a charity looking to expand your reach? Learn about our partnership opportunities." }
+      ]
+    },
+    {
+      title: "Resources",
+      links: [
+        { title: "FAQ", content: "Find answers to commonly asked questions about donations, tax receipts, and more." },
+        { title: "Blog", content: "Stay updated with the latest news in philanthropy and learn about the impact of your donations." },
+        { title: "Contact Us", content: "Need help? Our support team is available 24/7 to assist you with any questions or concerns." }
+      ]
+    }
+  ];
 
   const handleOpenModal = (title, content) => {
-    console.log("Opening modal with:", { title, content }); // Log to verify correct title and content
     setModalContent({ title, content });
     setOpenModal(true);
   };
@@ -44,41 +43,65 @@ const Footer = () => {
     setOpenModal(false);
   };
 
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    // Implement subscription logic here
+    console.log(`Subscribed with email: ${email}`);
+    setEmail('');
+    alert('Thank you for subscribing!');
+  };
+
   return (
-    <footer className="footer " style={{ textAlign: 'center', marginTop: '20px' }}>
-      <Box className="footerDiv">
-        <Grid container spacing={3} >
+    <footer className="footer">
+      <div className="footer-content">
+        <div className="footer-sections">
           {sections.map((section, index) => (
-            <Grid item xs={6} sm={3} key={index}>
-              <Typography variant="h6" className="fth4">{section}</Typography>
-              <ul className="ftul">
-                {links[section].map((link, i) => (
-                  <li key={i} >
-                    <Link
-                      to="#"
-                      className="ftlnk"
-                      onClick={() => handleOpenModal(link.title, link.content)} // Open modal on click
-                    >
+            <div key={index} className="footer-section">
+              <h4>{section.title}</h4>
+              <ul>
+                {section.links.map((link, i) => (
+                  <li key={i}>
+                    <button onClick={() => handleOpenModal(link.title, link.content)}>
                       {link.title}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
-            </Grid>
+            </div>
           ))}
-        </Grid>
-        <div className="lastDonor" style={{ textAlign: 'center', marginTop: '20px' }}>
-          < Subscription />
-          <Typography variant="body2">&copy; 2024 DonorPay. All rights reserved.</Typography>
         </div>
-      </Box>
-      <InfoModal 
-        open={openModal} 
-        handleClose={handleCloseModal} 
-        title={modalContent.title} 
-        content={modalContent.content} 
-      />
-      
+        <div className="footer-subscription">
+          <h4>Stay Connected</h4>
+          <p>Subscribe to our newsletter for updates on how your donations are making a difference.</p>
+          <form onSubmit={handleSubscribe}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p>&copy; 2024 DonorPay. All rights reserved.</p>
+        <div className="social-links">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+        </div>
+      </div>
+      {openModal && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>{modalContent.title}</h2>
+            <p>{modalContent.content}</p>
+            <button onClick={handleCloseModal}>Close</button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

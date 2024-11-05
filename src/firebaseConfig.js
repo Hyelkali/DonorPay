@@ -7,7 +7,6 @@ import { getStorage } from 'firebase/storage';
 const firebaseConfig = {
     apiKey: "AIzaSyC4m4DZwh6NzhCpv-Uvzd6N-3kDknu3QGY",
     authDomain: "snappy-cistern-434310-j1.firebaseapp.com",
-    databaseURL: "https://donor-pay-rawi.vercel.app",
     projectId: "snappy-cistern-434310-j1",
     storageBucket: "snappy-cistern-434310-j1.appspot.com",
     messagingSenderId: "310484394792",
@@ -25,4 +24,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Export services
-export { auth, provider, db, doc, getDoc, storage, sendVerificationEmail, firebaseOnAuthStateChanged };
+export { app, auth, provider, db, doc, getDoc, storage, sendVerificationEmail, firebaseOnAuthStateChanged };

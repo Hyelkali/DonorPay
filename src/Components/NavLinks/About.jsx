@@ -12,10 +12,13 @@ import DonorPayVideo from "../../Video/DonorPay.mp4";
 const About = () => {
   const [darkMode, setDarkMode] = useState(false);
 
+
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
-    document.documentElement.classList.toggle("dark", !darkMode);
+    document.documentElement.classList.toggle("dark", darkMode);
+    document.bodyElement.classList.toggle("light-mode", !darkMode);
   };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100 dark:bg-gray-800">
@@ -88,9 +91,6 @@ const About = () => {
           </Button>
         </section>
       </main>
-      <div className="footer">
-        <Footer />
-      </div>
     </div>
   );
 };

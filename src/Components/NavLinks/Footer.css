@@ -1,62 +1,191 @@
 .footer {
-  /* background-color: #333; */
-  color: white;
-  /* padding: 20px 0; */
-  width: 100%; /* Ensures the footer spans the full width */
+  background-color: #f8f9fa;
+  padding: 40px 20px;
+  color: #333;
+  font-family: Arial, sans-serif;
 }
 
-.footerDiv {
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.footer-sections {
   display: flex;
-  gap: 50px;
-  justify-content: space-between; /* Space between sections */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  padding: 0 20px;
+  flex-wrap: wrap;
+  width: 70%;
 }
 
-.footerDiv > div {
-  flex: 10; /* Distribute space evenly */
-  margin: 0 0px;
-  min-width: 280px; /* Ensure sections don’t shrink too much on small screens */
+.footer-section {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 20px;
 }
 
-.fth4 {
-  font-weight: bold;
-  margin-bottom: 10px;
+.footer-section h4 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #2c3e50;
 }
 
-.ftul {
-  list-style: none;
+.footer-section ul {
+  list-style-type: none;
   padding: 0;
 }
 
-.ftul li {
-  margin: 5px 0;
+.footer-section ul li {
+  margin-bottom: 10px;
 }
 
-.ftlnk {
-  color: white;
-  text-decoration: none;
+.footer-section ul li button {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  padding: 0;
+  transition: color 0.3s ease;
 }
 
-.ftlnk:hover {
+.footer-section ul li button:hover {
+  color: #2980b9;
   text-decoration: underline;
 }
 
-.lastDonor {
-  margin-top: 20px;
+.footer-subscription {
+  width: 30%;
+  min-width: 250px;
 }
 
-/* Media query for mobile screens */
+.footer-subscription h4 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.footer-subscription p {
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.footer-subscription form {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.footer-subscription input[type="email"] {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 14px;
+}
+
+.footer-subscription button {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.footer-subscription button:hover {
+  background-color: #2980b9;
+}
+
+.footer-bottom {
+  margin-top: 40px;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.footer-bottom p {
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.social-links {
+  margin-top: 15px;
+}
+
+.social-links a {
+  color: #3498db;
+  margin: 0 10px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #2980b9;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.modal-content p {
+  color: #34495e;
+  line-height: 1.6;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 8px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+  background-color: #2980b9;
+}
+
 @media (max-width: 768px) {
-  .footerDiv {
-    flex-direction: column; /* Stacks sections vertically on mobile */
-    align-items: center;
+  .footer-content {
+    flex-direction: column;
   }
 
-  .footerDiv > div {
-    margin-bottom: 20px; /* Add some spacing between sections */
-    text-align: center; /* Center-align content for better mobile appearance */
+  .footer-sections, .footer-subscription {
+    width: 100%;
+  }
+
+  .footer-section {
+    margin-right: 0;
+    margin-bottom: 30px;
   }
 }

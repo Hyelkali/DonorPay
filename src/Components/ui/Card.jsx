@@ -1,27 +1,29 @@
+// ./ui/Card.jsx
 import React from 'react';
 
-const Card = ({ children, className }) => {
-  return (
-    <div className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const Card = ({ children }) => (
+  <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '16px', margin: '8px 0' }}>
+    {children}
+  </div>
+);
 
-export const CardHeader = ({ children }) => {
-  return (
-    <div className="bg-gray-100 px-4 py-2">
-      {children}
-    </div>
-  );
-};
+export const CardHeader = ({ children }) => (
+  <div style={{ borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>{children}</div>
+);
 
-export const CardContent = ({ children, className }) => {
-  return (
-    <div className={`p-4 ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardTitle = ({ children }) => (
+  <h3 style={{ margin: 0 }}>{children}</h3>
+);
 
+export const CardDescription = ({ children }) => (
+  <p style={{ color: '#666' }}>{children}</p>
+);
+
+export const CardContent = ({ children }) => (
+  <div style={{ padding: '8px 0' }}>{children}</div>
+);
+
+export const CardFooter = ({ children }) => (
+  <div style={{ borderTop: '1px solid #ddd', paddingTop: '8px' }}>{children}</div>
+);
 export default Card;

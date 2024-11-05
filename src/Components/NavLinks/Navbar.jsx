@@ -14,8 +14,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
     { name: "Home", icon: <HomeIcon className="navlinks" />, href: "/" },
     { name: "About", icon: <Info className="navlinks" />, href: "/about" },
     { name: "Contact", icon: <Mail className="navlinks" />, href: "/contact" },
-    { name: "Log In", icon: <LogIn className="navlinks" />, href: "/login" },
-    { name: "Sign Up", icon: <UserPlus className="navlinks" />, href: "/register" },
+    { name: "Member Login", icon: <LogIn className="navlinks" />, href: "/login" },
   ];
 
   useEffect(() => {

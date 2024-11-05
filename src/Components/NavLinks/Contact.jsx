@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
+import Navbar from './Navbar'
 import emailjs from "emailjs-com"; // Import EmailJS
 
 const Contact = () => {
   const [darkMode, setDarkMode] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,7 +16,12 @@ const Contact = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   const toggleDarkMode = () => setDarkMode((prev) => !prev);
-
+  
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", darkMode);
+    document.body.classList.toggle("light-mode", !darkMode);
+  }, [darkMode]);
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,

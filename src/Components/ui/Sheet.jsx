@@ -1,34 +1,38 @@
+// ./ui/Sheet.jsx
 import React, { useState } from 'react';
 
-const Sheet = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const Sheet = ({ children }) => <div>{children}</div>;
 
-  const toggleSheet = () => {
-    setIsOpen(!isOpen);
-  };
+export const SheetTrigger = ({ onClick, children }) => (
+  <button onClick={onClick} style={{ cursor: 'pointer', padding: '8px' }}>
+    {children}
+  </button>
+);
 
-  return (
-    <div>
-      <div onClick={toggleSheet} className="cursor-pointer">
-        {children[0]} {/* SheetTrigger */}
-      </div>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg shadow-lg p-4">
-            {children[1]} {/* SheetContent */}
-          </div>
-        </div>
-      )}
+export const SheetContent = ({ isOpen, onClose, children }) => (
+  isOpen ? (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      right: 0,
+      width: '300px',
+      height: '100%',
+      backgroundColor: '#fff',
+      boxShadow: '-2px 0 5px rgba(0,0,0,0.3)',
+      padding: '16px',
+      zIndex: 1000
+    }}>
+      <button onClick={onClose} style={{ marginBottom: '16px', cursor: 'pointer' }}>Close</button>
+      {children}
     </div>
-  );
-};
+  ) : null
+);
 
-export const SheetTrigger = ({ children }) => {
-  return <div>{children}</div>;
-};
+export const SheetHeader = ({ children }) => <div style={{ borderBottom: '1px solid #ddd', paddingBottom: '8px' }}>{children}</div>;
 
-export const SheetContent = ({ children }) => {
-  return <div>{children}</div>;
-};
+export const SheetTitle = ({ children }) => <h2>{children}</h2>;
+
+export const SheetDescription = ({ children }) => <p style={{ color: '#666' }}>{children}</p>;
+
 
 export default Sheet;

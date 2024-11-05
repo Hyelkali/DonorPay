@@ -1,13 +1,21 @@
-// Input.js
+// src/components/ui/Input.js
 import React from 'react';
 
-const Input = ({ type, placeholder, ...props }) => {
+const Input = ({ value, onChange, type = 'text', placeholder, style }) => {
   return (
     <input
       type={type}
+      value={value}
+      onChange={onChange}
       placeholder={placeholder}
-      className="py-2 px-4 border border-gray-300 rounded"
-      {...props}
+      style={{
+        padding: '8px',
+        fontSize: '1rem',
+        width: '100%',
+        borderRadius: '4px',
+        border: '1px solid #ddd',
+        ...style,
+      }}
     />
   );
 };

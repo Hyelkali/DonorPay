@@ -1,24 +1,16 @@
-import React, { useState } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { AuthProvider } from './Components/Context/AuthContext';
+import { CssBaseline } from '@mui/material';
+import { AuthProvider } from './Context/AuthContext';
+import Layout from './Components/Layout';
 import Home from './Components/Home';
-import Register from './Components/Register';
-import Login from './Components/Login';
-import Dashboard from './Components/Dashboard';
-import ForgotPassword from './Components/ForgotPassword';
 import About from './Components/NavLinks/About';
-import Footer from './Components/NavLinks/Footer';
-import InfoModal from './Components/InfoModal';
-import Verify from './Components/Verify';
-import Navbar from './Components/NavLinks/Navbar';
-import Popup from './Components/Popup';
-import Subscription from './Components/NavLinks/Subscription';
 import Contact from './Components/NavLinks/Contact';
-import Wallet from './Components/Dashboard/Wallet';
-import Transaction from './Components/Dashboard/Transaction';
-import DashSettings from './Components/Dashboard/DashSettings';
-import Deposit from './Components/Dashboard/Deposit';
+import Login from "./Components/login";
+import Dashboard from './Components/Dashboard';
+import Subscription from './Components/NavLinks/Subscription';
+import NotFound from './Components/NotFound';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -27,112 +19,65 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Error Boundary caught an error", error, errorInfo);
+    console.error('Error Boundary caught an error', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
-      return <h1>Something went wrong. Please try again later.</h1>;
+      return (
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+          <h1>Something went wrong. Please try again later.</h1>
+          <button onClick={() => window.location.href = '/'}>Go to Home</button>
+        </div>
+      );
     }
-
-    return this.props.children; 
+    return this.props.children;
   }
 }
 
-// Define the DashboardLayout component
-const DashboardLayout = ({ wallet, handleDeposit, handleWithdrawal, showNavbar }) => {
-  const [activeComponent, setActiveComponent] = useState('main'); // Default component
-
-  const renderActiveComponent = () => {
-    switch (activeComponent) {
-      case 'wallet':
-        return <Wallet wallet={wallet} />;
-      case 'deposit':
-        return <Deposit handleDeposit={handleDeposit} />;
-      case 'transaction':
-        return <Transaction />;
-      case 'settings':
-        return <DashSettings />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
-  return (
-    <div>
-      {showNavbar && <Navbar setActiveComponent={setActiveComponent} />}
-      {renderActiveComponent()}
-    </div>
-  );
-};
-
-// Define routes inside App component
-const App = () => {
-  const [wallet, setWallet] = useState({ balance: 0 });
-  const [transactions, setTransactions] = useState([]);
-
-  const addTransaction = (type, amount) => {
-    const newTransaction = {
-      id: Date.now(),
-      type,
-      amount,
-      date: new Date().toLocaleString(),
-    };
-    setTransactions((prev) => [newTransaction, ...prev]);
-  };
-
-  const handleDeposit = (amount) => {
-    setWallet((prev) => ({ ...prev, balance: prev.balance + amount }));
-    addTransaction('Deposit', amount);
-  };
-
-  const handleWithdrawal = (amount) => {
-    setWallet((prev) => ({ ...prev, balance: prev.balance - amount }));
-    addTransaction('Withdrawal', amount);
-  };
-
-  const router = createBrowserRouter([
-    { path: '/', element: <Home /> },
-    { path: '/register', element: <Register /> },
-    { path: '/contact', element: <Contact /> },
-    { path: '/login', element: <Login /> },
-    { path: '/forgot-password', element: <ForgotPassword /> },
-    { path: '/about', element: <About /> },
-    { path: '/footer', element: <Footer /> },
-    { path: '/popup', element: <Popup /> },
-    { path: '/infomodal', element: <InfoModal /> },
-    { path: '/navbar', element: <Navbar /> },
-    { path: '/subscription', element: <Subscription /> },
-    { path: '/verify', element: <Verify /> },
-    {
-      path: '/dashboard',
-      element: (
-        <DashboardLayout
-          wallet={wallet}
-          handleDeposit={handleDeposit}
-          handleWithdrawal={handleWithdrawal}
-          showNavbar={false} // Set this to false to hide the navbar
-        />
-      ),
+// Custom Theme Configuration
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
     },
-  ]);
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+  typography: {
+    fontFamily: 'Poppins, sans-serif',
+  },
+});
 
-  const theme = createTheme();
-
-  return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <ErrorBoundary>
-          <RouterProvider router={router} />
-        </ErrorBoundary>
-      </AuthProvider>
-    </ThemeProvider>
-  );
-};
+// Main App Component
+const App = () => (
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <AuthProvider>
+      <ErrorBoundary>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="login" element={<Login />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="subscription" element={<Subscription />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ErrorBoundary>
+    </AuthProvider>
+  </ThemeProvider>
+);
 
 export default App;
