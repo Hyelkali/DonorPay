@@ -1,6 +1,5 @@
 node_modules
-<<<<<<< HEAD
-=======
+.env
 *.local
 
 # Editor directories and files
@@ -13,4 +12,3 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
->>>>>>> 68c74acdedfd11dedcf0c4abf212ac92103501a7
