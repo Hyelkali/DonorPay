@@ -5,13 +5,13 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 // Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyC4m4DZwh6NzhCpv-Uvzd6N-3kDknu3QGY",
-    authDomain: "snappy-cistern-434310-j1.firebaseapp.com",
-    projectId: "snappy-cistern-434310-j1",
-    storageBucket: "snappy-cistern-434310-j1.appspot.com",
-    messagingSenderId: "310484394792",
-    appId: "1:310484394792:web:06a6680b2f25f62b9f661d",
-    measurementId: "G-TBY6QZT640"
+    apiKey: import.meta.env.VITE_API_KEY,
+    authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_APP_ID,
+    measurementId: import.meta.env.VITE_MEASUREMENT_ID
 };
 
 // Initialize Firebase app
